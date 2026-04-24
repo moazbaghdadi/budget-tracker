@@ -62,9 +62,11 @@ Produces:
 
 | OS      | Artifact                                                      |
 |---------|---------------------------------------------------------------|
-| Linux   | `src-tauri/target/release/bundle/{deb,appimage}/...`         |
-| macOS   | `src-tauri/target/release/bundle/{dmg,macos}/...`            |
+| Linux   | `src-tauri/target/release/bundle/{deb,rpm}/...`              |
+| macOS   | `src-tauri/target/release/bundle/{dmg,app}/...`              |
 | Windows | `src-tauri/target/release/bundle/{msi,nsis}/...`             |
+
+To also produce a Linux **AppImage**, install [`linuxdeploy`](https://github.com/linuxdeploy/linuxdeploy) and run `pnpm tauri build --bundles deb,rpm,appimage`.
 
 ---
 

@@ -6,9 +6,9 @@
   "permissions": [
     "core:default",
     "fs:default",
-    "fs:allow-app-config-read-recursive",
-    "fs:allow-app-config-write-recursive",
-    "fs:allow-app-config-meta-recursive",
+    "fs:allow-appconfig-read-recursive",
+    "fs:allow-appconfig-write-recursive",
+    "fs:allow-appconfig-meta-recursive",
     "dialog:default",
     "opener:default"
   ]
