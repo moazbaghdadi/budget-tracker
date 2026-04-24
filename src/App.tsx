@@ -1,7 +1,9 @@
 import { Sidebar } from './components/Sidebar';
+import { UndoRedoBar } from './components/UndoRedoBar';
 import { Dashboard } from './screens/Dashboard';
 import { Transactions } from './screens/Transactions';
 import { CategoriesScreen } from './screens/Categories';
+import { HistoryScreen } from './screens/History';
 import { useStore } from './lib/useStore';
 
 export default function App() {
@@ -38,6 +40,27 @@ export default function App() {
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar screen={store.screen} setScreen={store.setScreen} />
       <main style={{ flex: 1, overflow: 'auto' }}>
+        <div
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            background: 'var(--bg)',
+            borderBottom: '1px solid var(--border)',
+            padding: '12px 36px',
+            display: 'flex',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <UndoRedoBar
+            canUndo={store.canUndo}
+            canRedo={store.canRedo}
+            undoLabel={store.undoLabel}
+            redoLabel={store.redoLabel}
+            onUndo={store.undo}
+            onRedo={store.redo}
+          />
+        </div>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 36px' }}>
           {store.screen === 'dashboard' && (
             <Dashboard transactions={store.data.tx} setScreen={store.setScreen} />
@@ -58,15 +81,7 @@ export default function App() {
             />
           )}
           {store.screen === 'history' && (
-            <div
-              style={{
-                padding: 24,
-                color: 'var(--text-muted)',
-                fontSize: 16,
-              }}
-            >
-              شاشة "السجل" قادمة في الخطوة التالية.
-            </div>
+            <HistoryScreen history={store.history} onRestore={store.restoreSnapshot} />
           )}
         </div>
       </main>
