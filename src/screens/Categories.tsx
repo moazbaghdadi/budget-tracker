@@ -4,6 +4,7 @@ import { Card } from '../components/Card';
 import { PageHeader } from '../components/PageHeader';
 import { IDown, IPlus, ITrash, IUp } from '../components/icons';
 import { inputStyle } from '../components/styles';
+import { useT } from '../i18n/LangProvider';
 
 type Props = {
   categories: Cats;
@@ -12,18 +13,16 @@ type Props = {
 };
 
 export function CategoriesScreen({ categories, onAdd, onRemove }: Props) {
+  const { t } = useT();
   const [newI, setNewI] = useState('');
   const [newE, setNewE] = useState('');
 
   return (
     <div>
-      <PageHeader
-        title="إدارة الفئات"
-        subtitle="الفئات تظهر تلقائيًا عند إضافة معاملة جديدة"
-      />
+      <PageHeader title={t('cats.title')} subtitle={t('cats.subtitle')} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
         <CatSection
-          title="فئات الدخل"
+          title={t('cats.income')}
           color="var(--green)"
           bg="var(--green-light)"
           items={categories.income}
@@ -37,7 +36,7 @@ export function CategoriesScreen({ categories, onAdd, onRemove }: Props) {
           icon={<IUp s={18} />}
         />
         <CatSection
-          title="فئات المصروفات"
+          title={t('cats.expense')}
           color="var(--red)"
           bg="var(--red-light)"
           items={categories.expense}
@@ -78,6 +77,7 @@ function CatSection({
   onRemove,
   icon,
 }: SectionProps) {
+  const { t, tp } = useT();
   return (
     <Card>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
@@ -95,7 +95,7 @@ function CatSection({
         <h2 style={{ fontSize: 17, fontWeight: 700, color }}>{title}</h2>
         <span
           style={{
-            marginRight: 'auto',
+            marginInlineStart: 'auto',
             background: bg,
             color,
             borderRadius: 20,
@@ -122,7 +122,7 @@ function CatSection({
           >
             <span style={{ fontSize: 15, fontWeight: 600 }}>{item}</span>
             <button
-              aria-label={`حذف الفئة ${item}`}
+              aria-label={tp('cats.deleteAria', { name: item })}
               onClick={() => onRemove(item)}
               style={{
                 background: 'var(--red-light)',
@@ -150,21 +150,21 @@ function CatSection({
               padding: '16px 0',
             }}
           >
-            لا توجد فئات بعد
+            {t('cats.empty')}
           </p>
         )}
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
         <input
-          aria-label="اسم الفئة الجديدة"
+          aria-label={t('cats.newLabel')}
           value={newVal}
           onChange={(e) => setNewVal(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && onAdd()}
-          placeholder="اسم الفئة الجديدة..."
+          placeholder={t('cats.newPlaceholder')}
           style={{ ...inputStyle, marginBottom: 0, flex: 1 }}
         />
         <button
-          aria-label="إضافة فئة"
+          aria-label={t('cats.addBtn')}
           onClick={onAdd}
           style={{
             padding: '0 18px',
@@ -172,7 +172,6 @@ function CatSection({
             border: 'none',
             background: color,
             color: '#fff',
-            fontFamily: 'IBM Plex Sans Arabic, sans-serif',
             fontSize: 22,
             fontWeight: 700,
             cursor: 'pointer',

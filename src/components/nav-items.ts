@@ -1,14 +1,15 @@
 import type { ComponentType } from 'react';
 import type { Screen } from '../types';
+import type { MessageKey } from '../i18n/messages';
 import { ICats, IDash, IHistory, ITrans } from './icons';
 
 export const NAV_ITEMS: ReadonlyArray<{
   id: Screen;
-  label: string;
+  labelKey: MessageKey;
   Icon: ComponentType<{ s?: number }>;
 }> = [
-  { id: 'dashboard', label: 'لوحة التحكم', Icon: IDash },
-  { id: 'transactions', label: 'المعاملات', Icon: ITrans },
-  { id: 'categories', label: 'الفئات', Icon: ICats },
-  { id: 'history', label: 'السجل', Icon: IHistory },
+  { id: 'dashboard', labelKey: 'nav.dashboard', Icon: IDash },
+  { id: 'transactions', labelKey: 'nav.transactions', Icon: ITrans },
+  { id: 'categories', labelKey: 'nav.categories', Icon: ICats },
+  { id: 'history', labelKey: 'nav.history', Icon: IHistory },
 ];

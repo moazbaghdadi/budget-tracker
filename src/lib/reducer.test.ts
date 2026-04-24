@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { reduce, describeAction, INIT_DATA, type Action } from './reducer';
+import { messages, type MessageKey } from '../i18n/messages';
 import type { AppData } from '../types';
 
 const blank: AppData = { tx: [], cats: { income: [], expense: [] } };
+
+const tAr = (key: MessageKey) => messages.ar[key];
 
 describe('reduce: addTx', () => {
   it('appends a transaction with the provided id', () => {
@@ -89,15 +92,47 @@ describe('reduce: removeCategory', () => {
 });
 
 describe('describeAction', () => {
-  it('describes addTx with type, category, and amount', () => {
-    const s = describeAction(blank, {
-      kind: 'addTx',
-      id: 'x',
-      tx: { date: '2026-04-10', type: 'income', category: 'التبرعات', description: '', amount: 500 },
-    });
-    expect(s).toContain('إضافة دخل');
+  it('describes addTx with type, category, and amount (Arabic)', () => {
+    const s = describeAction(
+      blank,
+      {
+        kind: 'addTx',
+        id: 'x',
+        tx: {
+          date: '2026-04-10',
+          type: 'income',
+          category: 'التبرعات',
+          description: '',
+          amount: 500,
+        },
+      },
+      tAr,
+    );
+    expect(s).toContain(messages.ar['undo.addIncome']);
     expect(s).toContain('التبرعات');
     expect(s).toContain('500');
+  });
+
+  it('describes addTx in German when given the German translator', () => {
+    const tDe = (key: MessageKey) => messages.de[key];
+    const s = describeAction(
+      blank,
+      {
+        kind: 'addTx',
+        id: 'x',
+        tx: {
+          date: '2026-04-10',
+          type: 'expense',
+          category: 'Miete',
+          description: '',
+          amount: 350,
+        },
+      },
+      tDe,
+    );
+    expect(s).toContain(messages.de['undo.addExpense']);
+    expect(s).toContain('Miete');
+    expect(s).toContain('350');
   });
 
   it('describes deleteTx using the existing transaction', () => {
@@ -114,14 +149,26 @@ describe('describeAction', () => {
         },
       ],
     };
-    const s = describeAction(seeded, { kind: 'deleteTx', id: '1' });
-    expect(s).toContain('حذف مصروف');
+    const s = describeAction(seeded, { kind: 'deleteTx', id: '1' }, tAr);
+    expect(s).toContain(messages.ar['undo.deleteExpense']);
     expect(s).toContain('الإيجار');
   });
 
   it('falls back gracefully when deleteTx target is missing', () => {
-    const s = describeAction(blank, { kind: 'deleteTx', id: 'missing' });
-    expect(s).toBe('حذف معاملة');
+    const s = describeAction(blank, { kind: 'deleteTx', id: 'missing' }, tAr);
+    expect(s).toBe(messages.ar['undo.deleteTx']);
+  });
+
+  it('describes addCategory with type-specific verb', () => {
+    const s = describeAction(blank, { kind: 'addCategory', type: 'income', name: 'X' }, tAr);
+    expect(s).toContain(messages.ar['undo.addCatIncome']);
+    expect(s).toContain('X');
+  });
+
+  it('describes removeCategory with type-specific verb', () => {
+    const s = describeAction(blank, { kind: 'removeCategory', type: 'expense', name: 'Y' }, tAr);
+    expect(s).toContain(messages.ar['undo.removeCatExpense']);
+    expect(s).toContain('Y');
   });
 });
 

@@ -1,17 +1,22 @@
 # Project: متتبع الميزانية — Design Preferences
 
 ## Language & Locale
-- App language: **Arabic (RTL)**
-- All UI text must be in Arabic
+- **Bilingual: Arabic (RTL) and German (LTR)**, runtime-switchable via the sidebar footer
+- Default on first launch: browser-detected (`de-*` → German, otherwise Arabic). Choice persisted in `localStorage['budget-tracker:lang']`
+- All UI strings live in the typed dictionary at `src/i18n/messages.ts`. Access them via `useT()` from `src/i18n/LangProvider.tsx` — never hard-code text in JSX
+- Seed data (default categories, sample transactions in `src/lib/reducer.ts`) intentionally stays Arabic; German users rename the defaults as needed
 - Use Arabic terminology consistent with the Excel file (التبرعات، رسوم العضوية، الإيجار والمرافق، etc.)
-- **Numbers: always use English numerals** (1,234.00) — never Arabic-Indic (١٬٢٣٤٫٠٠)
-- Use `toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })` for all currency formatting
-- Currency: Euro (€), formatted as `€\u202F` + number (e.g. `€ 1,234.00`)
+- **Numbers in the Arabic UI: English numerals** (1,234.00) — never Arabic-Indic (١٬٢٣٤٫٠٠)
+- **Numbers in the German UI: de-DE locale** (1.234,00)
+- `src/lib/format.ts` exports `fmt`/`fmtA`/`fmtDate`/`fmtMonth` that all take a `Lang` parameter. `useT()` exposes pre-bound variants (`fmtMoney`/`fmtMoneyAbs`/`fmtDate`/`fmtMonth`) that read the active language automatically
+- Arabic currency: `€` + narrow NBSP (U+202F) + number, e.g. `€ 1,234.00`
+- German currency: number + narrow NBSP + `€`, e.g. `1.234,00 €`
 
 ## Typography
-- **Primary font: IBM Plex Sans Arabic** (weights 400, 500, 600, 700)
-- Google Fonts import: `https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap`
-- CSS: `font-family: 'IBM Plex Sans Arabic', sans-serif;`
+- Arabic: **IBM Plex Sans Arabic** (weights 400, 500, 600, 700)
+- German: **IBM Plex Sans** (same weights)
+- Both fonts are loaded in `index.html`. CSS variable `--app-font` switches based on `html[data-lang]` (set at document root by LangProvider and by the boot snippet in `src/main.tsx`)
+- Body font uses `var(--app-font)`; a global `button, input, textarea, select { font-family: inherit }` rule cascades it into form elements. Do NOT set inline `fontFamily` in components
 - Minimum font size: 14px for body, 13px for labels/captions
 
 ## Color Palette
@@ -40,12 +45,12 @@
 | Desktop `> 1100px` | Full labeled sidebar (240px), 4-col stats, data tables, centered modals |
 
 ## App Structure (3 screens)
-1. **لوحة التحكم** (Dashboard) — balance hero, monthly/yearly stats, recent transactions, category bar chart (desktop)
-2. **المعاملات** (Transactions) — filter tabs, search, table (desktop) or cards (mobile/tablet), add transaction modal
-3. **الفئات** (Categories) — manage income & expense categories, side-by-side on tablet/desktop
+1. **لوحة التحكم** / **Übersicht** (Dashboard) — balance hero, monthly/yearly stats, recent transactions, category bar chart (desktop)
+2. **المعاملات** / **Buchungen** (Transactions) — filter tabs, search, table (desktop) or cards (mobile/tablet), add transaction modal
+3. **الفئات** / **Kategorien** (Categories) — manage income & expense categories, side-by-side on tablet/desktop
 
 ## App Structure (desktop addition)
-4. **السجل** (History) — desktop-only screen showing the undo-tree as a flat-with-branches list; lets the user restore any past version.
+4. **السجل** / **Verlauf** (History) — desktop-only screen showing the undo-tree as a flat-with-branches list; lets the user restore any past version.
 
 ## Tech Stack (desktop app)
 - **Tauri 2** wrapper, **React 18 + TypeScript + Vite** UI

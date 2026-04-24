@@ -15,6 +15,7 @@ import {
 } from './history';
 import { describeAction, INIT_DATA, reduce, type Action } from './reducer';
 import { emptyDisk, load, save } from './persist';
+import { useT } from '../i18n/LangProvider';
 
 const newId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -43,10 +44,17 @@ export type Store = {
 };
 
 export function useStore(): Store {
-  const [history, setHistory] = useState<History>(() => createHistory(INIT_DATA));
+  const { t } = useT();
+  const [history, setHistory] = useState<History>(() =>
+    createHistory(INIT_DATA, { labels: { root: t('history.rootLabel') } }),
+  );
   const [ready, setReady] = useState(false);
   const [screen, setScreen] = useState<Screen>('dashboard');
   const lastSavedRef = useRef<string | null>(null);
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   // Load from disk once on mount.
   useEffect(() => {
@@ -83,7 +91,7 @@ export function useStore(): Store {
       const data = currentData(h);
       const next = reduce(data, action);
       if (next === data) return h;
-      return commit(h, next, describeAction(data, action));
+      return commit(h, next, describeAction(data, action, tRef.current));
     });
   }, []);
 
@@ -101,7 +109,10 @@ export function useStore(): Store {
     removeCategory: (type, name) => apply({ kind: 'removeCategory', type, name }),
     undo: () => setHistory((h) => undo(h)),
     redo: () => setHistory((h) => redo(h)),
-    restoreSnapshot: (id) => setHistory((h) => restore(h, id)),
+    restoreSnapshot: (id) =>
+      setHistory((h) =>
+        restore(h, id, { labels: { restorePrefix: tRef.current('history.restorePrefix') } }),
+      ),
     canUndo: canUndo(history),
     canRedo: canRedo(history),
     undoLabel: undoLabel(history),

@@ -1,11 +1,12 @@
 import type { Transaction, Screen } from '../types';
-import { AR_MONTHS, fmt, fmtA, parseDate } from '../lib/format';
+import { parseDate } from '../lib/format';
 import { Card } from '../components/Card';
 import { EmptyState } from '../components/EmptyState';
 import { SectionTitle } from '../components/SectionTitle';
 import { StatCard } from '../components/StatCard';
 import { TxRow } from '../components/TxRow';
 import { IDown, IUp } from '../components/icons';
+import { useT } from '../i18n/LangProvider';
 
 type Props = {
   transactions: Transaction[];
@@ -17,9 +18,11 @@ function sumByType(arr: Transaction[], type: 'income' | 'expense'): number {
 }
 
 export function Dashboard({ transactions, setScreen }: Props) {
+  const { t, fmtMoney, fmtMoneyAbs, fmtMonth } = useT();
   const now = new Date();
   const cm = now.getMonth();
   const cy = now.getFullYear();
+  const currentYm = `${cy}-${String(cm + 1).padStart(2, '0')}`;
 
   const monthly = transactions.filter((t) => {
     const d = parseDate(t.date);
@@ -92,25 +95,29 @@ export function Dashboard({ transactions, setScreen }: Props) {
           }}
         >
           <div>
-            <p style={{ fontSize: 14, opacity: 0.8, marginBottom: 8 }}>الرصيد الإجمالي</p>
-            <p style={{ fontSize: 52, fontWeight: 700, letterSpacing: -1 }}>{fmt(total)}</p>
-            <p style={{ fontSize: 13, opacity: 0.7, marginTop: 8 }}>
-              {AR_MONTHS[cm]} {cy}
-            </p>
+            <p style={{ fontSize: 14, opacity: 0.8, marginBottom: 8 }}>{t('dashboard.balance')}</p>
+            <p style={{ fontSize: 52, fontWeight: 700, letterSpacing: -1 }}>{fmtMoney(total)}</p>
+            <p style={{ fontSize: 13, opacity: 0.7, marginTop: 8 }}>{fmtMonth(currentYm)}</p>
           </div>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 12, opacity: 0.75, marginBottom: 4 }}>دخل الشهر</p>
-              <p style={{ fontSize: 22, fontWeight: 700 }}>{fmtA(mI)}</p>
+              <p style={{ fontSize: 12, opacity: 0.75, marginBottom: 4 }}>
+                {t('dashboard.monthIncome')}
+              </p>
+              <p style={{ fontSize: 22, fontWeight: 700 }}>{fmtMoneyAbs(mI)}</p>
             </div>
             <div style={{ width: 1, height: 44, background: 'oklch(100% 0 0 / 0.2)' }} />
             <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 12, opacity: 0.75, marginBottom: 4 }}>مصروف الشهر</p>
-              <p style={{ fontSize: 22, fontWeight: 700 }}>{fmtA(mE)}</p>
+              <p style={{ fontSize: 12, opacity: 0.75, marginBottom: 4 }}>
+                {t('dashboard.monthExpense')}
+              </p>
+              <p style={{ fontSize: 22, fontWeight: 700 }}>{fmtMoneyAbs(mE)}</p>
             </div>
             <div style={{ width: 1, height: 44, background: 'oklch(100% 0 0 / 0.2)' }} />
             <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 12, opacity: 0.75, marginBottom: 4 }}>صافي الشهر</p>
+              <p style={{ fontSize: 12, opacity: 0.75, marginBottom: 4 }}>
+                {t('dashboard.monthNet')}
+              </p>
               <p
                 style={{
                   fontSize: 22,
@@ -118,7 +125,7 @@ export function Dashboard({ transactions, setScreen }: Props) {
                   color: mN >= 0 ? '#a8ffce' : '#ffb3a8',
                 }}
               >
-                {fmt(mN)}
+                {fmtMoney(mN)}
               </p>
             </div>
           </div>
@@ -134,29 +141,29 @@ export function Dashboard({ transactions, setScreen }: Props) {
         }}
       >
         <StatCard
-          label="دخل الشهر"
-          value={fmtA(mI)}
+          label={t('dashboard.monthIncome')}
+          value={fmtMoneyAbs(mI)}
           color="var(--green)"
           bg="var(--green-light)"
           icon={<IUp s={18} />}
         />
         <StatCard
-          label="مصروف الشهر"
-          value={fmtA(mE)}
+          label={t('dashboard.monthExpense')}
+          value={fmtMoneyAbs(mE)}
           color="var(--red)"
           bg="var(--red-light)"
           icon={<IDown s={18} />}
         />
         <StatCard
-          label="دخل السنة"
-          value={fmtA(yI)}
+          label={t('dashboard.yearIncome')}
+          value={fmtMoneyAbs(yI)}
           color="var(--green)"
           bg="var(--green-light)"
           icon={<IUp s={18} />}
         />
         <StatCard
-          label="مصروف السنة"
-          value={fmtA(yE)}
+          label={t('dashboard.yearExpense')}
+          value={fmtMoneyAbs(yE)}
           color="var(--red)"
           bg="var(--red-light)"
           icon={<IDown s={18} />}
@@ -178,17 +185,16 @@ export function Dashboard({ transactions, setScreen }: Props) {
                   fontWeight: 600,
                   color: 'var(--teal)',
                   cursor: 'pointer',
-                  fontFamily: 'IBM Plex Sans Arabic, sans-serif',
                 }}
               >
-                عرض الكل
+                {t('dashboard.viewAll')}
               </button>
             }
           >
-            آخر المعاملات
+            {t('dashboard.recent')}
           </SectionTitle>
           {recent.length === 0 ? (
-            <EmptyState msg="لا توجد معاملات بعد" />
+            <EmptyState msg={t('dashboard.emptyTx')} />
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {recent.map((t) => (
@@ -199,16 +205,16 @@ export function Dashboard({ transactions, setScreen }: Props) {
         </Card>
 
         <Card style={{ alignSelf: 'start' }}>
-          <SectionTitle>المصروفات حسب الفئة</SectionTitle>
+          <SectionTitle>{t('dashboard.byCategory')}</SectionTitle>
           {catEntries.length === 0 ? (
-            <EmptyState msg="لا توجد بيانات" />
+            <EmptyState msg={t('dashboard.emptyData')} />
           ) : (
             catEntries.map(([cat, val]) => (
               <div key={cat} style={{ marginBottom: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                   <span style={{ fontSize: 14, fontWeight: 600 }}>{cat}</span>
                   <span style={{ fontSize: 14, color: 'var(--red)', fontWeight: 700 }}>
-                    {fmtA(val)}
+                    {fmtMoneyAbs(val)}
                   </span>
                 </div>
                 <div style={{ height: 8, background: 'var(--red-light)', borderRadius: 99 }}>

@@ -1,4 +1,7 @@
 import type { AppData, Transaction, TxType } from '../types';
+import type { MessageKey } from '../i18n/messages';
+
+type TFn = (key: MessageKey) => string;
 
 export type Action =
   | { kind: 'addTx'; tx: Omit<Transaction, 'id'>; id: string }
@@ -116,21 +119,25 @@ export function reduce(state: AppData, action: Action): AppData {
   }
 }
 
-export function describeAction(state: AppData, action: Action): string {
+export function describeAction(state: AppData, action: Action, t: TFn): string {
   switch (action.kind) {
     case 'addTx': {
-      const verb = action.tx.type === 'income' ? 'إضافة دخل' : 'إضافة مصروف';
+      const verb = t(action.tx.type === 'income' ? 'undo.addIncome' : 'undo.addExpense');
       return `${verb} · ${action.tx.category} · ${action.tx.amount.toLocaleString('en-US')}`;
     }
     case 'deleteTx': {
-      const t = state.tx.find((x) => x.id === action.id);
-      if (!t) return 'حذف معاملة';
-      const verb = t.type === 'income' ? 'حذف دخل' : 'حذف مصروف';
-      return `${verb} · ${t.category} · ${t.amount.toLocaleString('en-US')}`;
+      const tx = state.tx.find((x) => x.id === action.id);
+      if (!tx) return t('undo.deleteTx');
+      const verb = t(tx.type === 'income' ? 'undo.deleteIncome' : 'undo.deleteExpense');
+      return `${verb} · ${tx.category} · ${tx.amount.toLocaleString('en-US')}`;
     }
-    case 'addCategory':
-      return `إضافة فئة ${action.type === 'income' ? 'دخل' : 'مصروف'} · ${action.name.trim()}`;
-    case 'removeCategory':
-      return `حذف فئة ${action.type === 'income' ? 'دخل' : 'مصروف'} · ${action.name}`;
+    case 'addCategory': {
+      const verb = t(action.type === 'income' ? 'undo.addCatIncome' : 'undo.addCatExpense');
+      return `${verb} · ${action.name.trim()}`;
+    }
+    case 'removeCategory': {
+      const verb = t(action.type === 'income' ? 'undo.removeCatIncome' : 'undo.removeCatExpense');
+      return `${verb} · ${action.name}`;
+    }
   }
 }

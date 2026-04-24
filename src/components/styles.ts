@@ -6,7 +6,7 @@ export const inputStyle: CSSProperties = {
   borderRadius: 12,
   border: '2px solid var(--border)',
   background: 'var(--bg)',
-  fontFamily: 'IBM Plex Sans Arabic, sans-serif',
+  fontFamily: 'inherit',
   fontSize: 16,
   color: 'var(--text)',
   outline: 'none',

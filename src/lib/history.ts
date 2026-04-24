@@ -12,16 +12,29 @@ const defaultIdGen: IdGen = () =>
 
 const defaultNow: Now = () => Date.now();
 
+export type HistoryLabels = {
+  root: string;
+  restorePrefix: string;
+};
+
+const DEFAULT_LABELS: HistoryLabels = {
+  root: 'بداية',
+  restorePrefix: 'استرجاع',
+};
+
 export type HistoryDeps = {
   idGen?: IdGen;
   now?: Now;
+  labels?: Partial<HistoryLabels>;
 };
+
+type ResolvedDeps = { idGen: IdGen; now: Now; labels: HistoryLabels };
 
 function makeNode(
   data: AppData,
   parentId: string | null,
   label: string,
-  deps: Required<HistoryDeps>,
+  deps: ResolvedDeps,
 ): Snapshot {
   return {
     id: deps.idGen(),
@@ -33,13 +46,17 @@ function makeNode(
   };
 }
 
-function withDeps(deps?: HistoryDeps): Required<HistoryDeps> {
-  return { idGen: deps?.idGen ?? defaultIdGen, now: deps?.now ?? defaultNow };
+function withDeps(deps?: HistoryDeps): ResolvedDeps {
+  return {
+    idGen: deps?.idGen ?? defaultIdGen,
+    now: deps?.now ?? defaultNow,
+    labels: { ...DEFAULT_LABELS, ...deps?.labels },
+  };
 }
 
 export function createHistory(initial: AppData, deps?: HistoryDeps): History {
   const d = withDeps(deps);
-  const root = makeNode(initial, null, 'بداية', d);
+  const root = makeNode(initial, null, d.labels.root, d);
   return { rootId: root.id, currentId: root.id, nodes: { [root.id]: root } };
 }
 
@@ -113,7 +130,8 @@ export function restore(history: History, snapshotId: string, deps?: HistoryDeps
   const target = history.nodes[snapshotId];
   if (!target) return history;
   if (snapshotId === history.currentId) return history;
-  return commit(history, target.data, `استرجاع: ${target.label}`, deps);
+  const d = withDeps(deps);
+  return commit(history, target.data, `${d.labels.restorePrefix}: ${target.label}`, deps);
 }
 
 /**

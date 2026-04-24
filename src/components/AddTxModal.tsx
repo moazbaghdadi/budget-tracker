@@ -3,6 +3,7 @@ import type { Categories, TxType } from '../types';
 import { todayIso } from '../lib/format';
 import { IClose, IDown, IPlus, IUp } from './icons';
 import { inputStyle as inputSt } from './styles';
+import { useT } from '../i18n/LangProvider';
 
 function FLabel({ children }: { children: ReactNode }) {
   return (
@@ -27,6 +28,7 @@ type Props = {
 };
 
 export function AddTxModal({ categories, onAdd, onClose }: Props) {
+  const { t } = useT();
   const [type, setType] = useState<TxType>('income');
   const [cat, setCat] = useState('');
   const [desc, setDesc] = useState('');
@@ -37,9 +39,9 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
   const cats = type === 'income' ? categories.income : categories.expense;
 
   function handleAdd() {
-    if (!cat) return setError('يرجى اختيار الفئة');
+    if (!cat) return setError(t('modal.error.pickCategory'));
     const num = Number(amount);
-    if (!amount || Number.isNaN(num) || num <= 0) return setError('يرجى إدخال مبلغ صحيح');
+    if (!amount || Number.isNaN(num) || num <= 0) return setError(t('modal.error.amount'));
     onAdd({ type, category: cat, description: desc, amount: num, date });
     onClose();
   }
@@ -81,10 +83,10 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
           }}
         >
           <h2 id="addtx-title" style={{ fontSize: 22, fontWeight: 700 }}>
-            إضافة معاملة جديدة
+            {t('modal.tx.title')}
           </h2>
           <button
-            aria-label="إغلاق"
+            aria-label={t('modal.close')}
             onClick={onClose}
             style={{
               background: 'var(--border)',
@@ -102,14 +104,14 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
           </button>
         </div>
 
-        <FLabel>النوع</FLabel>
+        <FLabel>{t('modal.field.type')}</FLabel>
         <div
           style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}
         >
           {(
             [
-              ['income', 'دخل', <IUp key="up" s={18} />],
-              ['expense', 'مصروف', <IDown key="down" s={18} />],
+              ['income', t('tx.typeIncome'), <IUp key="up" s={18} />],
+              ['expense', t('tx.typeExpense'), <IDown key="down" s={18} />],
             ] as const
           ).map(([v, l, ico]) => (
             <button
@@ -136,7 +138,6 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
                     : '#fff',
                 color:
                   type === v ? (v === 'income' ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)',
-                fontFamily: 'IBM Plex Sans Arabic, sans-serif',
                 fontSize: 17,
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -151,12 +152,10 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
           ))}
         </div>
 
-        <FLabel>الفئة</FLabel>
+        <FLabel>{t('modal.field.category')}</FLabel>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
           {cats.length === 0 && (
-            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-              لا توجد فئات — أضفها من شاشة "الفئات" أولاً
-            </p>
+            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>{t('modal.noCategories')}</p>
           )}
           {cats.map((c) => (
             <button
@@ -169,7 +168,6 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
                 borderColor: cat === c ? 'var(--teal)' : 'var(--border)',
                 background: cat === c ? 'var(--teal-light)' : '#fff',
                 color: cat === c ? 'var(--teal)' : 'var(--text)',
-                fontFamily: 'IBM Plex Sans Arabic, sans-serif',
                 fontSize: 15,
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -180,18 +178,18 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
           ))}
         </div>
 
-        <FLabel>الوصف (اختياري)</FLabel>
+        <FLabel>{t('modal.field.description')}</FLabel>
         <input
-          aria-label="الوصف"
+          aria-label={t('modal.field.descriptionShort')}
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
-          placeholder="مثال: إيجار المكتب — أبريل"
+          placeholder={t('modal.field.descPlaceholder')}
           style={inputSt}
         />
 
-        <FLabel>المبلغ (€)</FLabel>
+        <FLabel>{t('modal.field.amount')}</FLabel>
         <input
-          aria-label="المبلغ"
+          aria-label={t('modal.field.amountShort')}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           type="number"
@@ -206,13 +204,13 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
           }}
         />
 
-        <FLabel>التاريخ</FLabel>
+        <FLabel>{t('modal.field.date')}</FLabel>
         <input
-          aria-label="التاريخ"
+          aria-label={t('modal.field.date')}
           value={date}
           onChange={(e) => setDate(e.target.value)}
           type="date"
-          style={{ ...inputSt, direction: 'ltr', textAlign: 'right' }}
+          style={{ ...inputSt, direction: 'ltr', textAlign: 'start' }}
         />
 
         {error && (
@@ -238,7 +236,6 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
             border: 'none',
             background: type === 'income' ? 'var(--green)' : 'var(--red)',
             color: '#fff',
-            fontFamily: 'IBM Plex Sans Arabic, sans-serif',
             fontSize: 18,
             fontWeight: 700,
             cursor: 'pointer',
@@ -249,7 +246,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
             gap: 8,
           }}
         >
-          <IPlus s={20} /> حفظ المعاملة
+          <IPlus s={20} /> {t('modal.save')}
         </button>
       </div>
     </div>

@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "متتبع الميزانية",
+        "title": "Budget-Tracker",
         "width": 1280,
         "height": 820,
         "minWidth": 1024,
@@ -37,8 +37,8 @@
       "icons/icon.ico"
     ],
     "category": "Finance",
-    "shortDescription": "متتبع ميزانية بسيط للشركات الصغيرة",
-    "longDescription": "تطبيق سطح مكتب لتتبع الدخل والمصروفات، مع حفظ على القرص وسجل تراجع متفرع."
+    "shortDescription": "Simple budget tracker for small organizations",
+    "longDescription": "Desktop app for tracking income and expenses, with on-disk persistence and a branching undo history."
   },
   "plugins": {
     "fs": {

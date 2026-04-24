@@ -1,3 +1,5 @@
+import type { Lang } from '../i18n/messages';
+
 export const AR_MONTHS = [
   'يناير',
   'فبراير',
@@ -13,35 +15,64 @@ export const AR_MONTHS = [
   'ديسمبر',
 ] as const;
 
+export const DE_MONTHS = [
+  'Januar',
+  'Februar',
+  'März',
+  'April',
+  'Mai',
+  'Juni',
+  'Juli',
+  'August',
+  'September',
+  'Oktober',
+  'November',
+  'Dezember',
+] as const;
+
 export function parseDate(d: string): Date {
   return new Date(d + 'T00:00:00');
 }
 
-export function fmtN(n: number): string {
-  return Math.abs(n).toLocaleString('en-US', {
+// NARROW NO-BREAK SPACE (U+202F) — used between number and € symbol.
+const NBSP = ' ';
+
+export function fmtN(n: number, lang: Lang = 'ar'): string {
+  const locale = lang === 'de' ? 'de-DE' : 'en-US';
+  return Math.abs(n).toLocaleString(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
 
-const NBSP = ' ';
-
-export function fmt(n: number): string {
-  return (n < 0 ? '-' : '') + '€' + NBSP + fmtN(n);
+// With sign. German places € after the amount; Arabic keeps € prefix with English digits.
+export function fmt(n: number, lang: Lang = 'ar'): string {
+  const abs = fmtN(n, lang);
+  const sign = n < 0 ? '-' : '';
+  return lang === 'de' ? `${sign}${abs}${NBSP}€` : `${sign}€${NBSP}${abs}`;
 }
 
-export function fmtA(n: number): string {
-  return '€' + NBSP + fmtN(n);
+// Absolute value, no sign.
+export function fmtA(n: number, lang: Lang = 'ar'): string {
+  const abs = fmtN(n, lang);
+  return lang === 'de' ? `${abs}${NBSP}€` : `€${NBSP}${abs}`;
 }
 
-export function fmtDateAr(d: string): string {
+export function fmtDate(d: string, lang: Lang = 'ar'): string {
   const date = parseDate(d);
-  return `${date.getDate()} ${AR_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+  const day = date.getDate();
+  const month = date.getMonth();
+  const year = date.getFullYear();
+  if (lang === 'de') return `${day}. ${DE_MONTHS[month]} ${year}`;
+  return `${day} ${AR_MONTHS[month]} ${year}`;
 }
 
-export function fmtMonthAr(yyyymm: string): string {
+export function fmtMonth(yyyymm: string, lang: Lang = 'ar'): string {
   const date = parseDate(yyyymm + '-01');
-  return `${AR_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+  const month = date.getMonth();
+  const year = date.getFullYear();
+  if (lang === 'de') return `${DE_MONTHS[month]} ${year}`;
+  return `${AR_MONTHS[month]} ${year}`;
 }
 
 export function todayIso(): string {

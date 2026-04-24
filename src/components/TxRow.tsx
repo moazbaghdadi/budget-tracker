@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { Transaction } from '../types';
-import { fmtA, fmtDateAr } from '../lib/format';
 import { IDown, ITrash, IUp } from './icons';
+import { useT } from '../i18n/LangProvider';
 
 const tdS: CSSProperties = {
   padding: '14px 16px',
@@ -17,9 +17,12 @@ type Props = {
 };
 
 export function TxRow({ t, onDelete, tableMode }: Props) {
+  const { t: tr, fmtMoneyAbs, fmtDate } = useT();
   const inc = t.type === 'income';
-  const dayStr = fmtDateAr(t.date);
+  const dayStr = fmtDate(t.date);
   const sign = inc ? '+' : '-';
+  const typeLabel = tr(inc ? 'tx.typeIncome' : 'tx.typeExpense');
+  const deleteAria = tr('tx.deleteAria');
 
   if (tableMode) {
     return (
@@ -39,7 +42,7 @@ export function TxRow({ t, onDelete, tableMode }: Props) {
               color: inc ? 'var(--green)' : 'var(--red)',
             }}
           >
-            {inc ? <IUp s={14} /> : <IDown s={14} />} {inc ? 'دخل' : 'مصروف'}
+            {inc ? <IUp s={14} /> : <IDown s={14} />} {typeLabel}
           </span>
         </td>
         <td style={tdS}>{t.category}</td>
@@ -54,12 +57,12 @@ export function TxRow({ t, onDelete, tableMode }: Props) {
           }}
         >
           {sign}
-          {fmtA(t.amount)}
+          {fmtMoneyAbs(t.amount)}
         </td>
         <td style={{ ...tdS, textAlign: 'center' }}>
           {onDelete && (
             <button
-              aria-label="حذف المعاملة"
+              aria-label={deleteAria}
               onClick={() => onDelete(t.id)}
               style={{
                 background: 'var(--red-light)',
@@ -136,11 +139,11 @@ export function TxRow({ t, onDelete, tableMode }: Props) {
           }}
         >
           {sign}
-          {fmtA(t.amount)}
+          {fmtMoneyAbs(t.amount)}
         </span>
         {onDelete && (
           <button
-            aria-label="حذف المعاملة"
+            aria-label={deleteAria}
             onClick={() => onDelete(t.id)}
             style={{
               background: 'var(--red-light)',

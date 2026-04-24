@@ -2,6 +2,7 @@ import type { History, Snapshot } from '../types';
 import { Card } from '../components/Card';
 import { PageHeader } from '../components/PageHeader';
 import { listChronological } from '../lib/history';
+import { useT } from '../i18n/LangProvider';
 
 type Props = {
   history: History;
@@ -17,6 +18,7 @@ function fmtTime(ts: number): string {
 }
 
 export function HistoryScreen({ history, onRestore }: Props) {
+  const { t } = useT();
   // Newest first; current is highlighted.
   const all = listChronological(history).slice().reverse();
   const isCurrent = (s: Snapshot) => s.id === history.currentId;
@@ -24,13 +26,10 @@ export function HistoryScreen({ history, onRestore }: Props) {
 
   return (
     <div>
-      <PageHeader
-        title="السجل"
-        subtitle="كل تغيير محفوظ كنسخة. يمكنك العودة لأي نسخة سابقة في أي وقت."
-      />
+      <PageHeader title={t('history.title')} subtitle={t('history.subtitle')} />
       <Card style={{ padding: 0, overflow: 'hidden' }}>
         {all.length === 0 ? (
-          <p style={{ padding: 24, color: 'var(--text-muted)' }}>لا توجد نسخ بعد</p>
+          <p style={{ padding: 24, color: 'var(--text-muted)' }}>{t('history.empty')}</p>
         ) : (
           <div>
             {all.map((s, idx) => (
@@ -68,7 +67,7 @@ export function HistoryScreen({ history, onRestore }: Props) {
                           borderRadius: 99,
                         }}
                       >
-                        الحالية
+                        {t('history.current')}
                       </span>
                     )}
                   </p>
@@ -88,13 +87,12 @@ export function HistoryScreen({ history, onRestore }: Props) {
                       border: isRoot(s) ? '1px solid var(--border)' : 'none',
                       borderRadius: 8,
                       padding: '8px 14px',
-                      fontFamily: 'IBM Plex Sans Arabic, sans-serif',
                       fontSize: 13,
                       fontWeight: 700,
                       cursor: 'pointer',
                     }}
                   >
-                    {isRoot(s) ? 'استرجاع البداية' : 'استرجاع'}
+                    {isRoot(s) ? t('history.restoreStart') : t('history.restore')}
                   </button>
                 )}
               </div>

@@ -1,4 +1,5 @@
 import { IRedo, IUndo } from './icons';
+import { useT } from '../i18n/LangProvider';
 
 type Props = {
   canUndo: boolean;
@@ -18,7 +19,6 @@ const btn = (enabled: boolean) => ({
   border: '2px solid var(--border)',
   background: enabled ? '#fff' : 'var(--bg)',
   color: enabled ? 'var(--text)' : 'var(--text-muted)',
-  fontFamily: 'IBM Plex Sans Arabic, sans-serif',
   fontSize: 14,
   fontWeight: 600,
   cursor: enabled ? 'pointer' : 'not-allowed',
@@ -26,29 +26,32 @@ const btn = (enabled: boolean) => ({
 });
 
 export function UndoRedoBar({ canUndo, canRedo, undoLabel, redoLabel, onUndo, onRedo }: Props) {
+  const { t, tp } = useT();
+  const undoText = t('action.undo');
+  const redoText = t('action.redo');
   return (
     <div style={{ display: 'flex', gap: 8 }}>
       <button
         type="button"
-        aria-label="تراجع"
-        title={undoLabel ? `تراجع: ${undoLabel}` : 'لا يوجد ما يمكن التراجع عنه'}
+        aria-label={undoText}
+        title={undoLabel ? tp('action.undoTooltip', { label: undoLabel }) : t('action.undoNone')}
         disabled={!canUndo}
         onClick={onUndo}
         style={btn(canUndo)}
       >
         <IUndo s={16} />
-        تراجع
+        {undoText}
       </button>
       <button
         type="button"
-        aria-label="إعادة"
-        title={redoLabel ? `إعادة: ${redoLabel}` : 'لا يوجد ما يمكن إعادته'}
+        aria-label={redoText}
+        title={redoLabel ? tp('action.redoTooltip', { label: redoLabel }) : t('action.redoNone')}
         disabled={!canRedo}
         onClick={onRedo}
         style={btn(canRedo)}
       >
         <IRedo s={16} />
-        إعادة
+        {redoText}
       </button>
     </div>
   );

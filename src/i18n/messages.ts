@@ -1,0 +1,221 @@
+export const LANGS = ['ar', 'de'] as const;
+export type Lang = (typeof LANGS)[number];
+
+export const DEFAULT_LANG: Lang = 'ar';
+
+const ar = {
+  'app.loading': 'جاري تحميل البيانات…',
+  'app.name': 'متتبع الميزانية',
+
+  'nav.dashboard': 'لوحة التحكم',
+  'nav.transactions': 'المعاملات',
+  'nav.categories': 'الفئات',
+  'nav.history': 'السجل',
+
+  'lang.label': 'اللغة',
+  'lang.ar': 'العربية',
+  'lang.de': 'Deutsch',
+
+  'confirm.deleteTx': 'هل تريد حذف هذه المعاملة؟',
+  'confirm.deleteCat': 'هل تريد حذف الفئة "{name}"؟',
+
+  'dashboard.balance': 'الرصيد الإجمالي',
+  'dashboard.monthIncome': 'دخل الشهر',
+  'dashboard.monthExpense': 'مصروف الشهر',
+  'dashboard.monthNet': 'صافي الشهر',
+  'dashboard.yearIncome': 'دخل السنة',
+  'dashboard.yearExpense': 'مصروف السنة',
+  'dashboard.viewAll': 'عرض الكل',
+  'dashboard.recent': 'آخر المعاملات',
+  'dashboard.byCategory': 'المصروفات حسب الفئة',
+  'dashboard.emptyTx': 'لا توجد معاملات بعد',
+  'dashboard.emptyData': 'لا توجد بيانات',
+
+  'tx.title': 'المعاملات',
+  'tx.subtitle': 'كل الدخل والمصروفات',
+  'tx.add': 'إضافة معاملة',
+  'tx.filterAll': 'الكل',
+  'tx.filterIncome': 'دخل',
+  'tx.filterExpense': 'مصروف',
+  'tx.search': 'ابحث',
+  'tx.searchPlaceholder': 'ابحث...',
+  'tx.empty': 'لا توجد معاملات',
+  'tx.col.date': 'التاريخ',
+  'tx.col.type': 'النوع',
+  'tx.col.category': 'الفئة',
+  'tx.col.description': 'الوصف',
+  'tx.col.amount': 'المبلغ',
+  'tx.typeIncome': 'دخل',
+  'tx.typeExpense': 'مصروف',
+  'tx.deleteAria': 'حذف المعاملة',
+
+  'modal.tx.title': 'إضافة معاملة جديدة',
+  'modal.close': 'إغلاق',
+  'modal.field.type': 'النوع',
+  'modal.field.category': 'الفئة',
+  'modal.field.description': 'الوصف (اختياري)',
+  'modal.field.descriptionShort': 'الوصف',
+  'modal.field.amount': 'المبلغ (€)',
+  'modal.field.amountShort': 'المبلغ',
+  'modal.field.date': 'التاريخ',
+  'modal.field.descPlaceholder': 'مثال: إيجار المكتب — أبريل',
+  'modal.noCategories': 'لا توجد فئات — أضفها من شاشة "الفئات" أولاً',
+  'modal.save': 'حفظ المعاملة',
+  'modal.error.pickCategory': 'يرجى اختيار الفئة',
+  'modal.error.amount': 'يرجى إدخال مبلغ صحيح',
+
+  'cats.title': 'إدارة الفئات',
+  'cats.subtitle': 'الفئات تظهر تلقائيًا عند إضافة معاملة جديدة',
+  'cats.income': 'فئات الدخل',
+  'cats.expense': 'فئات المصروفات',
+  'cats.empty': 'لا توجد فئات بعد',
+  'cats.newPlaceholder': 'اسم الفئة الجديدة...',
+  'cats.newLabel': 'اسم الفئة الجديدة',
+  'cats.addBtn': 'إضافة فئة',
+  'cats.deleteAria': 'حذف الفئة {name}',
+
+  'history.title': 'السجل',
+  'history.subtitle': 'كل تغيير محفوظ كنسخة. يمكنك العودة لأي نسخة سابقة في أي وقت.',
+  'history.empty': 'لا توجد نسخ بعد',
+  'history.current': 'الحالية',
+  'history.restore': 'استرجاع',
+  'history.restoreStart': 'استرجاع البداية',
+  'history.rootLabel': 'بداية',
+  'history.restorePrefix': 'استرجاع',
+
+  'action.undo': 'تراجع',
+  'action.redo': 'إعادة',
+  'action.undoTooltip': 'تراجع: {label}',
+  'action.redoTooltip': 'إعادة: {label}',
+  'action.undoNone': 'لا يوجد ما يمكن التراجع عنه',
+  'action.redoNone': 'لا يوجد ما يمكن إعادته',
+
+  'undo.addIncome': 'إضافة دخل',
+  'undo.addExpense': 'إضافة مصروف',
+  'undo.deleteIncome': 'حذف دخل',
+  'undo.deleteExpense': 'حذف مصروف',
+  'undo.deleteTx': 'حذف معاملة',
+  'undo.addCatIncome': 'إضافة فئة دخل',
+  'undo.addCatExpense': 'إضافة فئة مصروف',
+  'undo.removeCatIncome': 'حذف فئة دخل',
+  'undo.removeCatExpense': 'حذف فئة مصروف',
+} as const;
+
+const de: Record<keyof typeof ar, string> = {
+  'app.loading': 'Daten werden geladen …',
+  'app.name': 'Budget-Tracker',
+
+  'nav.dashboard': 'Übersicht',
+  'nav.transactions': 'Buchungen',
+  'nav.categories': 'Kategorien',
+  'nav.history': 'Verlauf',
+
+  'lang.label': 'Sprache',
+  'lang.ar': 'العربية',
+  'lang.de': 'Deutsch',
+
+  'confirm.deleteTx': 'Diese Buchung wirklich löschen?',
+  'confirm.deleteCat': 'Kategorie „{name}" wirklich löschen?',
+
+  'dashboard.balance': 'Gesamtsaldo',
+  'dashboard.monthIncome': 'Einnahmen (Monat)',
+  'dashboard.monthExpense': 'Ausgaben (Monat)',
+  'dashboard.monthNet': 'Netto (Monat)',
+  'dashboard.yearIncome': 'Einnahmen (Jahr)',
+  'dashboard.yearExpense': 'Ausgaben (Jahr)',
+  'dashboard.viewAll': 'Alle anzeigen',
+  'dashboard.recent': 'Letzte Buchungen',
+  'dashboard.byCategory': 'Ausgaben nach Kategorie',
+  'dashboard.emptyTx': 'Noch keine Buchungen',
+  'dashboard.emptyData': 'Keine Daten',
+
+  'tx.title': 'Buchungen',
+  'tx.subtitle': 'Alle Einnahmen und Ausgaben',
+  'tx.add': 'Buchung hinzufügen',
+  'tx.filterAll': 'Alle',
+  'tx.filterIncome': 'Einnahmen',
+  'tx.filterExpense': 'Ausgaben',
+  'tx.search': 'Suchen',
+  'tx.searchPlaceholder': 'Suchen …',
+  'tx.empty': 'Keine Buchungen',
+  'tx.col.date': 'Datum',
+  'tx.col.type': 'Typ',
+  'tx.col.category': 'Kategorie',
+  'tx.col.description': 'Beschreibung',
+  'tx.col.amount': 'Betrag',
+  'tx.typeIncome': 'Einnahme',
+  'tx.typeExpense': 'Ausgabe',
+  'tx.deleteAria': 'Buchung löschen',
+
+  'modal.tx.title': 'Neue Buchung erfassen',
+  'modal.close': 'Schließen',
+  'modal.field.type': 'Typ',
+  'modal.field.category': 'Kategorie',
+  'modal.field.description': 'Beschreibung (optional)',
+  'modal.field.descriptionShort': 'Beschreibung',
+  'modal.field.amount': 'Betrag (€)',
+  'modal.field.amountShort': 'Betrag',
+  'modal.field.date': 'Datum',
+  'modal.field.descPlaceholder': 'z. B. Büromiete – April',
+  'modal.noCategories': 'Noch keine Kategorien – bitte zuerst im Bereich „Kategorien" anlegen',
+  'modal.save': 'Buchung speichern',
+  'modal.error.pickCategory': 'Bitte eine Kategorie auswählen',
+  'modal.error.amount': 'Bitte einen gültigen Betrag eingeben',
+
+  'cats.title': 'Kategorien verwalten',
+  'cats.subtitle': 'Kategorien erscheinen beim Erfassen einer Buchung automatisch',
+  'cats.income': 'Einnahmekategorien',
+  'cats.expense': 'Ausgabenkategorien',
+  'cats.empty': 'Noch keine Kategorien',
+  'cats.newPlaceholder': 'Name der neuen Kategorie …',
+  'cats.newLabel': 'Name der neuen Kategorie',
+  'cats.addBtn': 'Kategorie hinzufügen',
+  'cats.deleteAria': 'Kategorie {name} löschen',
+
+  'history.title': 'Verlauf',
+  'history.subtitle':
+    'Jede Änderung wird als Version gespeichert. Sie können jederzeit zu einer früheren Version zurückkehren.',
+  'history.empty': 'Noch keine Versionen',
+  'history.current': 'Aktuell',
+  'history.restore': 'Wiederherstellen',
+  'history.restoreStart': 'Auf Anfang zurücksetzen',
+  'history.rootLabel': 'Anfang',
+  'history.restorePrefix': 'Wiederherstellen',
+
+  'action.undo': 'Rückgängig',
+  'action.redo': 'Wiederholen',
+  'action.undoTooltip': 'Rückgängig: {label}',
+  'action.redoTooltip': 'Wiederholen: {label}',
+  'action.undoNone': 'Nichts zum Rückgängigmachen',
+  'action.redoNone': 'Nichts zum Wiederholen',
+
+  'undo.addIncome': 'Einnahme hinzufügen',
+  'undo.addExpense': 'Ausgabe hinzufügen',
+  'undo.deleteIncome': 'Einnahme löschen',
+  'undo.deleteExpense': 'Ausgabe löschen',
+  'undo.deleteTx': 'Buchung löschen',
+  'undo.addCatIncome': 'Einnahmekategorie hinzufügen',
+  'undo.addCatExpense': 'Ausgabenkategorie hinzufügen',
+  'undo.removeCatIncome': 'Einnahmekategorie löschen',
+  'undo.removeCatExpense': 'Ausgabenkategorie löschen',
+};
+
+export type MessageKey = keyof typeof ar;
+
+export const messages: Record<Lang, Record<MessageKey, string>> = { ar, de };
+
+export function translate(lang: Lang, key: MessageKey): string {
+  return messages[lang][key];
+}
+
+export function interpolate(
+  lang: Lang,
+  key: MessageKey,
+  params: Record<string, string | number>,
+): string {
+  let out = messages[lang][key];
+  for (const [k, v] of Object.entries(params)) {
+    out = out.replaceAll(`{${k}}`, String(v));
+  }
+  return out;
+}

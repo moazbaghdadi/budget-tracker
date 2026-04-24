@@ -5,9 +5,11 @@ import { Transactions } from './screens/Transactions';
 import { CategoriesScreen } from './screens/Categories';
 import { HistoryScreen } from './screens/History';
 import { useStore } from './lib/useStore';
+import { useT } from './i18n/LangProvider';
 
 export default function App() {
   const store = useStore();
+  const { t, tp } = useT();
 
   if (!store.ready) {
     return (
@@ -21,18 +23,18 @@ export default function App() {
           color: 'var(--text-muted)',
         }}
       >
-        جاري تحميل البيانات…
+        {t('app.loading')}
       </div>
     );
   }
 
   function confirmDelete(id: string) {
-    if (!window.confirm('هل تريد حذف هذه المعاملة؟')) return;
+    if (!window.confirm(t('confirm.deleteTx'))) return;
     store.deleteTx(id);
   }
 
   function confirmRemoveCategory(type: 'income' | 'expense', name: string) {
-    if (!window.confirm(`هل تريد حذف الفئة "${name}"؟`)) return;
+    if (!window.confirm(tp('confirm.deleteCat', { name }))) return;
     store.removeCategory(type, name);
   }
 

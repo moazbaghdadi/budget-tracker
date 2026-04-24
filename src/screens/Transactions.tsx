@@ -7,6 +7,8 @@ import { TxRow } from '../components/TxRow';
 import { AddTxModal, type NewTx } from '../components/AddTxModal';
 import { IPlus, ISearch } from '../components/icons';
 import { inputStyle } from '../components/styles';
+import { useT } from '../i18n/LangProvider';
+import type { MessageKey } from '../i18n/messages';
 
 type Filter = 'all' | 'income' | 'expense';
 
@@ -18,6 +20,7 @@ type Props = {
 };
 
 export function Transactions({ transactions, categories, onAdd, onDelete }: Props) {
+  const { t } = useT();
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
@@ -32,8 +35,8 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
   return (
     <div>
       <PageHeader
-        title="المعاملات"
-        subtitle="كل الدخل والمصروفات"
+        title={t('tx.title')}
+        subtitle={t('tx.subtitle')}
         action={
           <button
             onClick={() => setShowModal(true)}
@@ -46,14 +49,13 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
               border: 'none',
               background: 'var(--teal)',
               color: '#fff',
-              fontFamily: 'IBM Plex Sans Arabic, sans-serif',
               fontSize: 16,
               fontWeight: 700,
               cursor: 'pointer',
               boxShadow: '0 4px 16px oklch(42% 0.11 195 / 0.3)',
             }}
           >
-            <IPlus s={20} /> إضافة معاملة
+            <IPlus s={20} /> {t('tx.add')}
           </button>
         }
       />
@@ -70,11 +72,11 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
         <div style={{ display: 'flex', gap: 6 }}>
           {(
             [
-              ['all', 'الكل'],
-              ['income', 'دخل'],
-              ['expense', 'مصروف'],
-            ] as const
-          ).map(([v, l]) => (
+              ['all', 'tx.filterAll'],
+              ['income', 'tx.filterIncome'],
+              ['expense', 'tx.filterExpense'],
+            ] as const satisfies ReadonlyArray<readonly [Filter, MessageKey]>
+          ).map(([v, key]) => (
             <button
               key={v}
               onClick={() => setFilter(v)}
@@ -85,13 +87,12 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
                 borderColor: filter === v ? 'var(--teal)' : 'var(--border)',
                 background: filter === v ? 'var(--teal-light)' : '#fff',
                 color: filter === v ? 'var(--teal)' : 'var(--text-muted)',
-                fontFamily: 'IBM Plex Sans Arabic, sans-serif',
                 fontSize: 14,
                 fontWeight: 700,
                 cursor: 'pointer',
               }}
             >
-              {l}
+              {t(key)}
             </button>
           ))}
         </div>
@@ -100,7 +101,7 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
             style={{
               position: 'absolute',
               top: '50%',
-              right: 14,
+              insetInlineStart: 14,
               transform: 'translateY(-50%)',
               color: 'var(--text-muted)',
               pointerEvents: 'none',
@@ -109,14 +110,14 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
             <ISearch s={18} />
           </span>
           <input
-            aria-label="ابحث"
+            aria-label={t('tx.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="ابحث..."
+            placeholder={t('tx.searchPlaceholder')}
             style={{
               ...inputStyle,
               marginBottom: 0,
-              paddingRight: 42,
+              paddingInlineStart: 42,
               paddingTop: 10,
               paddingBottom: 10,
             }}
@@ -125,13 +126,22 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState msg="لا توجد معاملات" />
+        <EmptyState msg={t('tx.empty')} />
       ) : (
         <Card style={{ padding: 0, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg)', borderBottom: '2px solid var(--border)' }}>
-                {['التاريخ', 'النوع', 'الفئة', 'الوصف', 'المبلغ', ''].map((h, i) => (
+                {(
+                  [
+                    'tx.col.date',
+                    'tx.col.type',
+                    'tx.col.category',
+                    'tx.col.description',
+                    'tx.col.amount',
+                    null,
+                  ] as const satisfies ReadonlyArray<MessageKey | null>
+                ).map((key, i) => (
                   <th
                     key={i}
                     style={{
@@ -139,10 +149,10 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
                       fontSize: 13,
                       fontWeight: 700,
                       color: 'var(--text-muted)',
-                      textAlign: 'right',
+                      textAlign: 'start',
                     }}
                   >
-                    {h}
+                    {key ? t(key) : ''}
                   </th>
                 ))}
               </tr>
