@@ -1,61 +1,40 @@
-import {
-  BaseDirectory,
-  exists,
-  mkdir,
-  readTextFile,
-  remove,
-  rename,
-  writeTextFile,
-} from '@tauri-apps/plugin-fs';
 import type { DiskFormat } from '../types';
+import { loadTauri, saveTauri } from './persist-tauri';
+import { loadWeb, saveWeb } from './persist-web';
+
+const SCHEMA_VERSION = 1 as const;
 
 export const FILE = 'data.json';
 export const TMP_FILE = 'data.json.tmp';
 export const APP_DIR = 'budget-tracker';
-const SCHEMA_VERSION = 1 as const;
+export const WEB_KEY = 'budget-tracker:data';
 
-const DIR_OPT = { baseDir: BaseDirectory.AppConfig } as const;
-
-async function ensureDir(): Promise<void> {
-  if (!(await exists(APP_DIR, DIR_OPT))) {
-    await mkdir(APP_DIR, { ...DIR_OPT, recursive: true });
+declare global {
+  interface Window {
+    __TAURI_INTERNALS__?: unknown;
   }
 }
 
-/**
- * Read the disk file. Returns null if the file is missing, unreadable, or has
- * an unknown schema version (caller should start fresh in that case).
- */
+export function isTauri(): boolean {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+}
+
 export async function load(): Promise<DiskFormat | null> {
-  try {
-    if (!(await exists(`${APP_DIR}/${FILE}`, DIR_OPT))) return null;
-    const raw = await readTextFile(`${APP_DIR}/${FILE}`, DIR_OPT);
-    const parsed = JSON.parse(raw) as Partial<DiskFormat>;
-    if (parsed.schemaVersion !== SCHEMA_VERSION) return null;
-    if (!parsed.history || typeof parsed.history !== 'object') return null;
-    return parsed as DiskFormat;
-  } catch {
-    return null;
-  }
+  return isTauri() ? loadTauri() : loadWeb();
 }
 
-/**
- * Atomic write: write to data.json.tmp, then rename to data.json. The rename
- * is atomic on every supported OS, so a crash mid-save can't corrupt the file.
- */
 export async function save(d: DiskFormat): Promise<void> {
-  await ensureDir();
-  const json = JSON.stringify(d, null, 2);
-  await writeTextFile(`${APP_DIR}/${TMP_FILE}`, json, DIR_OPT);
-  if (await exists(`${APP_DIR}/${FILE}`, DIR_OPT)) {
-    await remove(`${APP_DIR}/${FILE}`, DIR_OPT);
-  }
-  await rename(`${APP_DIR}/${TMP_FILE}`, `${APP_DIR}/${FILE}`, {
-    oldPathBaseDir: BaseDirectory.AppConfig,
-    newPathBaseDir: BaseDirectory.AppConfig,
-  });
+  return isTauri() ? saveTauri(d) : saveWeb(d);
 }
 
 export function emptyDisk(history: DiskFormat['history']): DiskFormat {
   return { schemaVersion: SCHEMA_VERSION, history };
+}
+
+export function isValid(parsed: unknown): parsed is DiskFormat {
+  if (!parsed || typeof parsed !== 'object') return false;
+  const obj = parsed as Partial<DiskFormat>;
+  if (obj.schemaVersion !== SCHEMA_VERSION) return false;
+  if (!obj.history || typeof obj.history !== 'object') return false;
+  return true;
 }

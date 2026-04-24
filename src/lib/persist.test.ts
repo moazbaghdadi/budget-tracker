@@ -35,7 +35,8 @@ vi.mock('@tauri-apps/plugin-fs', () => {
   };
 });
 
-import { load, save, FILE, TMP_FILE, APP_DIR, emptyDisk } from './persist';
+import { loadTauri as load, saveTauri as save } from './persist-tauri';
+import { FILE, TMP_FILE, APP_DIR, emptyDisk } from './persist';
 import { createHistory } from './history';
 import type { DiskFormat } from '../types';
 
