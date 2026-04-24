@@ -61,3 +61,15 @@
 - E2E: `pnpm e2e` (Playwright against the web build)
 - Build native installers: `pnpm tauri build`
 - Always commit per implementation step, with a clear message tied to that step
+
+## Persistence layer
+- Detected at runtime via `isTauri()`:
+  - In Tauri window → `@tauri-apps/plugin-fs` writes atomically to `$AppConfig/budget-tracker/data.json`
+  - In browser → `localStorage` key `budget-tracker:data`
+- Disk format: `{ schemaVersion: 1, history }` — bump `schemaVersion` for migrations
+
+## Undo-tree
+- `src/lib/history.ts` — every mutation creates a snapshot; non-leaf edits create branches
+- `restore(id)` is a forward commit (older snapshots are immutable)
+- Cap: 200 snapshots; oldest non-root, non-current nodes are dropped first with their
+  children re-parented up so the chain stays connected

@@ -9,56 +9,101 @@ Cross-platform desktop budget tracker for small companies. Built with Tauri 2 + 
 
 > Mobile (Android/iOS) and an optional paid sync server are planned for follow-up milestones.
 
-## Quick start
+---
+
+## Quick start (no native build needed)
+
+The whole UI runs in a browser too — useful for fast iteration, e2e tests, and contributors who don't want to set up the Rust/Tauri toolchain.
 
 ```sh
-# install deps
 pnpm install
+pnpm dev          # opens on http://localhost:1420
+```
 
-# run in browser (fast iteration; no native window)
-pnpm dev
+In browser-only mode the data is persisted to `localStorage` instead of disk. Everything else is identical.
 
-# run as a native desktop app
+---
+
+## Native desktop app
+
+The native shell is **Tauri 2**. It needs the Rust toolchain plus a few system libraries.
+
+### One-time setup
+
+**Rust** (all OSes, user-space, no sudo):
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+```
+
+**Linux system deps** (Fedora 41+):
+
+```sh
+sudo dnf install -y webkit2gtk4.1-devel gtk3-devel libsoup3-devel \
+                    librsvg2-devel openssl-devel patchelf
+```
+
+(Other distros and macOS/Windows: see <https://v2.tauri.app/start/prerequisites/>.)
+
+### Run the native window
+
+```sh
 pnpm tauri dev
 ```
 
-## Verify
-
-```sh
-pnpm verify   # ESLint + tsc --noEmit + Vitest
-pnpm e2e      # Playwright (requires `pnpm e2e:install` once)
-```
-
-## Build native installers
+### Build native installers
 
 ```sh
 pnpm tauri build
 ```
 
-Produces `.deb`/`.AppImage` on Linux, `.dmg` on macOS, and `.msi`/`.exe` on Windows under `src-tauri/target/release/bundle/`.
+Produces:
+
+| OS      | Artifact                                                      |
+|---------|---------------------------------------------------------------|
+| Linux   | `src-tauri/target/release/bundle/{deb,appimage}/...`         |
+| macOS   | `src-tauri/target/release/bundle/{dmg,macos}/...`            |
+| Windows | `src-tauri/target/release/bundle/{msi,nsis}/...`             |
+
+---
+
+## Verify
+
+```sh
+pnpm verify   # ESLint + tsc --noEmit + Vitest (52 unit tests)
+pnpm e2e      # Playwright (8 browser e2e tests; needs `pnpm e2e:install` once)
+```
+
+Both should be green before opening a PR.
 
 ## Where is my data?
 
 A single JSON file is written atomically to:
 
-| OS      | Path                                                   |
-|---------|--------------------------------------------------------|
-| Linux   | `~/.config/budget-tracker/data.json`                   |
-| macOS   | `~/Library/Application Support/budget-tracker/data.json` |
-| Windows | `%APPDATA%\budget-tracker\data.json`                   |
+| OS      | Path                                                       |
+|---------|------------------------------------------------------------|
+| Linux   | `~/.config/budget-tracker/data.json`                       |
+| macOS   | `~/Library/Application Support/budget-tracker/data.json`   |
+| Windows | `%APPDATA%\budget-tracker\data.json`                       |
 
-The file contains the entire undo-tree, so undo/redo and "restore version" survive across restarts.
+The file contains the entire undo-tree, so undo, redo, and "restore version" survive across restarts.
 
 ## Project layout
 
 ```
 src/
-  lib/         pure logic (history, reducer, persist, format)
-  components/  reusable UI primitives ported from the design prototype
+  lib/         pure logic — history (undo-tree), reducer, persist, format
+  components/  reusable UI primitives (Sidebar, Card, TxRow, AddTxModal, …)
   screens/     Dashboard, Transactions, Categories, History
-  i18n/ar.ts   Arabic strings
-src-tauri/     Rust shell (window + filesystem plugin)
-e2e/           Playwright tests
+src-tauri/     Rust shell + window/fs config
+e2e/           Playwright tests (run against the web build)
 ```
 
 See [`CLAUDE.md`](./CLAUDE.md) for design preferences (colors, typography, locale rules).
+
+## Roadmap
+
+1. **Now** — Desktop (this repo).
+2. **Next** — Mobile (Android + iOS), reusing `src/lib/*` and most components via React Native or Capacitor.
+3. **Later** — Optional paid sync server for accounts and cross-device backup.
