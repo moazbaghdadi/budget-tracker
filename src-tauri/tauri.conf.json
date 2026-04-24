@@ -42,7 +42,6 @@
   },
   "plugins": {
     "fs": {
-      "scope": ["$APPCONFIG/budget-tracker/*"],
       "requireLiteralLeadingDot": false
     }
   }
