@@ -2,6 +2,7 @@ import type { History, Snapshot } from '../types';
 import { Card } from '../components/Card';
 import { PageHeader } from '../components/PageHeader';
 import { listChronological } from '../lib/history';
+import { formatDescriptor } from '../lib/reducer';
 import { useT } from '../i18n/LangProvider';
 
 type Props = {
@@ -55,7 +56,11 @@ export function HistoryScreen({ history, onRestore }: Props) {
                       color: isCurrent(s) ? 'var(--teal)' : 'var(--text)',
                     }}
                   >
-                    {s.label}
+                    {isRoot(s)
+                      ? t('history.rootLabel')
+                      : s.descriptor
+                        ? formatDescriptor(s.descriptor, t)
+                        : s.label}
                     {isCurrent(s) && (
                       <span
                         style={{

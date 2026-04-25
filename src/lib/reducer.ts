@@ -1,4 +1,4 @@
-import type { AppData, Attachment, Transaction } from '../types';
+import type { AppData, Attachment, SnapshotDescriptor, Transaction } from '../types';
 import type { MessageKey } from '../i18n/messages';
 
 type TFn = (key: MessageKey) => string;
@@ -84,46 +84,86 @@ export function reduce(state: AppData, action: Action): AppData {
   }
 }
 
-export function describeAction(state: AppData, action: Action, t: TFn): string {
+export function actionToDescriptor(state: AppData, action: Action): SnapshotDescriptor {
   switch (action.kind) {
     case 'addTx': {
-      const amt = action.tx.amount.toLocaleString('en-US');
-      if (action.tx.type === 'transfer') {
-        const from = t(action.tx.bucket === 'bank' ? 'bucket.bank' : 'bucket.cash');
-        const to = t(action.tx.toBucket === 'bank' ? 'bucket.bank' : 'bucket.cash');
-        return `${t('undo.addTransfer')} · ${from} → ${to} · ${amt}`;
+      if (action.tx.type === 'transfer' && action.tx.toBucket) {
+        return {
+          kind: 'addTransfer',
+          from: action.tx.bucket,
+          to: action.tx.toBucket,
+          amount: action.tx.amount,
+        };
       }
-      const verb = t(action.tx.type === 'income' ? 'undo.addIncome' : 'undo.addExpense');
-      return `${verb} · ${action.tx.category} · ${amt}`;
+      if (action.tx.type === 'income') {
+        return { kind: 'addIncome', category: action.tx.category, amount: action.tx.amount };
+      }
+      return { kind: 'addExpense', category: action.tx.category, amount: action.tx.amount };
     }
     case 'deleteTx': {
       const tx = state.tx.find((x) => x.id === action.id);
-      if (!tx) return t('undo.deleteTx');
-      const amt = tx.amount.toLocaleString('en-US');
-      if (tx.type === 'transfer') {
-        const from = t(tx.bucket === 'bank' ? 'bucket.bank' : 'bucket.cash');
-        const to = t(tx.toBucket === 'bank' ? 'bucket.bank' : 'bucket.cash');
-        return `${t('undo.deleteTransfer')} · ${from} → ${to} · ${amt}`;
+      if (!tx) return { kind: 'deleteUnknown' };
+      if (tx.type === 'transfer' && tx.toBucket) {
+        return { kind: 'deleteTransfer', from: tx.bucket, to: tx.toBucket, amount: tx.amount };
       }
-      const verb = t(tx.type === 'income' ? 'undo.deleteIncome' : 'undo.deleteExpense');
-      return `${verb} · ${tx.category} · ${amt}`;
+      if (tx.type === 'income') {
+        return { kind: 'deleteIncome', category: tx.category, amount: tx.amount };
+      }
+      return { kind: 'deleteExpense', category: tx.category, amount: tx.amount };
     }
-    case 'addCategory': {
-      const verb = t(action.type === 'income' ? 'undo.addCatIncome' : 'undo.addCatExpense');
-      return `${verb} · ${action.name.trim()}`;
-    }
-    case 'removeCategory': {
-      const verb = t(action.type === 'income' ? 'undo.removeCatIncome' : 'undo.removeCatExpense');
-      return `${verb} · ${action.name}`;
-    }
-    case 'addAttachment': {
-      return `${t('undo.addAttachment')} · ${action.attachment.filename}`;
-    }
+    case 'addCategory':
+      return { kind: 'addCategory', type: action.type, name: action.name.trim() };
+    case 'removeCategory':
+      return { kind: 'removeCategory', type: action.type, name: action.name };
+    case 'addAttachment':
+      return { kind: 'addAttachment', filename: action.attachment.filename };
     case 'removeAttachment': {
       const tx = state.tx.find((x) => x.id === action.txId);
       const att = tx?.attachments.find((a) => a.id === action.attachmentId);
-      if (!att) return t('undo.removeAttachment');
-      return `${t('undo.removeAttachment')} · ${att.filename}`;
+      return { kind: 'removeAttachment', filename: att?.filename ?? null };
     }
   }
+}
+
+function bucketLabel(b: 'bank' | 'cash', t: TFn): string {
+  return t(b === 'bank' ? 'bucket.bank' : 'bucket.cash');
+}
+
+export function formatDescriptor(d: SnapshotDescriptor, t: TFn): string {
+  switch (d.kind) {
+    case 'root':
+      return t('history.rootLabel');
+    case 'legacy':
+      return d.text;
+    case 'addIncome':
+      return `${t('undo.addIncome')} · ${d.category} · ${d.amount.toLocaleString('en-US')}`;
+    case 'addExpense':
+      return `${t('undo.addExpense')} · ${d.category} · ${d.amount.toLocaleString('en-US')}`;
+    case 'addTransfer':
+      return `${t('undo.addTransfer')} · ${bucketLabel(d.from, t)} → ${bucketLabel(d.to, t)} · ${d.amount.toLocaleString('en-US')}`;
+    case 'deleteIncome':
+      return `${t('undo.deleteIncome')} · ${d.category} · ${d.amount.toLocaleString('en-US')}`;
+    case 'deleteExpense':
+      return `${t('undo.deleteExpense')} · ${d.category} · ${d.amount.toLocaleString('en-US')}`;
+    case 'deleteTransfer':
+      return `${t('undo.deleteTransfer')} · ${bucketLabel(d.from, t)} → ${bucketLabel(d.to, t)} · ${d.amount.toLocaleString('en-US')}`;
+    case 'deleteUnknown':
+      return t('undo.deleteTx');
+    case 'addCategory':
+      return `${t(d.type === 'income' ? 'undo.addCatIncome' : 'undo.addCatExpense')} · ${d.name}`;
+    case 'removeCategory':
+      return `${t(d.type === 'income' ? 'undo.removeCatIncome' : 'undo.removeCatExpense')} · ${d.name}`;
+    case 'addAttachment':
+      return `${t('undo.addAttachment')} · ${d.filename}`;
+    case 'removeAttachment':
+      return d.filename === null
+        ? t('undo.removeAttachment')
+        : `${t('undo.removeAttachment')} · ${d.filename}`;
+    case 'restore':
+      return `${t('history.restorePrefix')}: ${formatDescriptor(d.target, t)}`;
+  }
+}
+
+export function describeAction(state: AppData, action: Action, t: TFn): string {
+  return formatDescriptor(actionToDescriptor(state, action), t);
 }

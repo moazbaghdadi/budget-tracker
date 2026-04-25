@@ -10,6 +10,10 @@
     "fs:allow-appconfig-write-recursive",
     "fs:allow-appconfig-meta-recursive",
     "dialog:default",
-    "opener:default"
+    "opener:default",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [{ "path": "$APPCONFIG/budget-tracker/attachments/*" }]
+    }
   ]
 }

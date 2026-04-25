@@ -1,4 +1,4 @@
-import type { AppData, History, Snapshot } from '../types';
+import type { AppData, History, Snapshot, SnapshotDescriptor } from '../types';
 
 export const HISTORY_CAP = 200;
 
@@ -35,6 +35,7 @@ function makeNode(
   parentId: string | null,
   label: string,
   deps: ResolvedDeps,
+  descriptor?: SnapshotDescriptor,
 ): Snapshot {
   return {
     id: deps.idGen(),
@@ -42,6 +43,7 @@ function makeNode(
     childIds: [],
     createdAt: deps.now(),
     label,
+    ...(descriptor ? { descriptor } : {}),
     data,
   };
 }
@@ -56,7 +58,7 @@ function withDeps(deps?: HistoryDeps): ResolvedDeps {
 
 export function createHistory(initial: AppData, deps?: HistoryDeps): History {
   const d = withDeps(deps);
-  const root = makeNode(initial, null, d.labels.root, d);
+  const root = makeNode(initial, null, d.labels.root, d, { kind: 'root' });
   return { rootId: root.id, currentId: root.id, nodes: { [root.id]: root } };
 }
 
@@ -66,10 +68,11 @@ export function commit(
   data: AppData,
   label: string,
   deps?: HistoryDeps,
+  descriptor?: SnapshotDescriptor,
 ): History {
   const d = withDeps(deps);
   const parent = history.nodes[history.currentId];
-  const node = makeNode(data, parent.id, label, d);
+  const node = makeNode(data, parent.id, label, d, descriptor);
   const nextNodes: Record<string, Snapshot> = {
     ...history.nodes,
     [parent.id]: { ...parent, childIds: [...parent.childIds, node.id] },
@@ -122,6 +125,22 @@ export function redoLabel(history: History): string | null {
   return history.nodes[last].label;
 }
 
+/** Snapshot that an undo would land on (returns the *current* node, since
+ *  undoing reverts the action that produced it). Null at the root. */
+export function undoSnapshot(history: History): Snapshot | null {
+  const cur = history.nodes[history.currentId];
+  if (cur.parentId === null) return null;
+  return cur;
+}
+
+/** Snapshot that a redo would advance to. Null at a leaf. */
+export function redoSnapshot(history: History): Snapshot | null {
+  const cur = history.nodes[history.currentId];
+  const last = cur.childIds[cur.childIds.length - 1];
+  if (!last) return null;
+  return history.nodes[last] ?? null;
+}
+
 /**
  * Restore a past snapshot. Implemented as a forward commit so older snapshots are
  * preserved exactly and the restore itself becomes part of the tree.
@@ -131,7 +150,15 @@ export function restore(history: History, snapshotId: string, deps?: HistoryDeps
   if (!target) return history;
   if (snapshotId === history.currentId) return history;
   const d = withDeps(deps);
-  return commit(history, target.data, `${d.labels.restorePrefix}: ${target.label}`, deps);
+  const targetDescriptor: SnapshotDescriptor =
+    target.descriptor ?? { kind: 'legacy', text: target.label };
+  return commit(
+    history,
+    target.data,
+    `${d.labels.restorePrefix}: ${target.label}`,
+    deps,
+    { kind: 'restore', target: targetDescriptor },
+  );
 }
 
 /**

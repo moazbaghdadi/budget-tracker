@@ -15,12 +15,19 @@ import {
   current,
   currentData,
   redo,
-  redoLabel,
+  redoSnapshot,
   restore,
   undo,
-  undoLabel,
+  undoSnapshot,
 } from './history';
-import { describeAction, INIT_DATA, reduce, type Action, type CategoryType } from './reducer';
+import {
+  actionToDescriptor,
+  formatDescriptor,
+  INIT_DATA,
+  reduce,
+  type Action,
+  type CategoryType,
+} from './reducer';
 import { emptyDisk, load, save } from './persist';
 import { useT } from '../i18n/LangProvider';
 
@@ -100,11 +107,25 @@ export function useStore(): Store {
       const data = currentData(h);
       const next = reduce(data, action);
       if (next === data) return h;
-      return commit(h, next, describeAction(data, action, tRef.current));
+      const descriptor = actionToDescriptor(data, action);
+      const label = formatDescriptor(descriptor, tRef.current);
+      return commit(h, next, label, undefined, descriptor);
     });
   }, []);
 
   const data = current(history).data;
+  const undoSnap = undoSnapshot(history);
+  const redoSnap = redoSnapshot(history);
+  const undoLabel = undoSnap
+    ? undoSnap.descriptor
+      ? formatDescriptor(undoSnap.descriptor, t)
+      : undoSnap.label
+    : null;
+  const redoLabel = redoSnap
+    ? redoSnap.descriptor
+      ? formatDescriptor(redoSnap.descriptor, t)
+      : redoSnap.label
+    : null;
 
   return {
     ready,
@@ -127,8 +148,8 @@ export function useStore(): Store {
       ),
     canUndo: canUndo(history),
     canRedo: canRedo(history),
-    undoLabel: undoLabel(history),
-    redoLabel: redoLabel(history),
+    undoLabel,
+    redoLabel,
   };
 }
 

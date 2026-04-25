@@ -30,12 +30,29 @@ export type AppData = {
   cats: Categories;
 };
 
+export type SnapshotDescriptor =
+  | { kind: 'root' }
+  | { kind: 'legacy'; text: string }
+  | { kind: 'addIncome'; category: string; amount: number }
+  | { kind: 'addExpense'; category: string; amount: number }
+  | { kind: 'addTransfer'; from: Bucket; to: Bucket; amount: number }
+  | { kind: 'deleteIncome'; category: string; amount: number }
+  | { kind: 'deleteExpense'; category: string; amount: number }
+  | { kind: 'deleteTransfer'; from: Bucket; to: Bucket; amount: number }
+  | { kind: 'deleteUnknown' }
+  | { kind: 'addCategory'; type: 'income' | 'expense'; name: string }
+  | { kind: 'removeCategory'; type: 'income' | 'expense'; name: string }
+  | { kind: 'addAttachment'; filename: string }
+  | { kind: 'removeAttachment'; filename: string | null }
+  | { kind: 'restore'; target: SnapshotDescriptor };
+
 export type Snapshot = {
   id: string;
   parentId: string | null;
   childIds: string[];
   createdAt: number;
   label: string;
+  descriptor?: SnapshotDescriptor;
   data: AppData;
 };
 
