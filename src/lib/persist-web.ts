@@ -1,5 +1,5 @@
 import type { DiskFormat } from '../types';
-import { WEB_KEY, isValid } from './persist';
+import { WEB_KEY, parseAndMigrate } from './persist';
 
 /** Browser fallback so `pnpm dev` and Playwright tests work without Tauri. */
 export function loadWeb(): DiskFormat | null {
@@ -7,7 +7,7 @@ export function loadWeb(): DiskFormat | null {
     const raw = localStorage.getItem(WEB_KEY);
     if (!raw) return null;
     const parsed: unknown = JSON.parse(raw);
-    return isValid(parsed) ? parsed : null;
+    return parseAndMigrate(parsed);
   } catch {
     return null;
   }

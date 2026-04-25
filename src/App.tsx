@@ -73,6 +73,8 @@ export default function App() {
               categories={store.data.cats}
               onAdd={store.addTx}
               onDelete={confirmDelete}
+              onAddAttachment={store.addAttachment}
+              onRemoveAttachment={store.removeAttachment}
             />
           )}
           {store.screen === 'categories' && (

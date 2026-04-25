@@ -153,3 +153,10 @@ export const IRedo = ({ s }: IconProps = {}) => (
 export const IFolder = ({ s }: IconProps = {}) => (
   <Ic size={s ?? 18} d={<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />} />
 );
+
+export const IPaperclip = ({ s }: IconProps = {}) => (
+  <Ic
+    size={s ?? 18}
+    d={<path d="M21 11.5l-8.5 8.5a5 5 0 0 1-7-7L14 4.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 1 1-2.8-2.8l7-7" />}
+  />
+);

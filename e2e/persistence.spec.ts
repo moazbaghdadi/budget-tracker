@@ -27,7 +27,7 @@ test('data survives a full page reload', async ({ page }) => {
     .not.toBeNull();
   const raw = await page.evaluate((key: string) => window.localStorage.getItem(key), STORAGE_KEY);
   const parsed = JSON.parse(raw as string) as { schemaVersion: number };
-  expect(parsed.schemaVersion).toBe(1);
+  expect(parsed.schemaVersion).toBe(2);
 
   // Reload — the test globals re-apply via init script, but storage is NOT re-cleared.
   await page.reload();

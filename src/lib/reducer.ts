@@ -1,4 +1,4 @@
-import type { AppData, Transaction, TxType } from '../types';
+import type { AppData, Attachment, Transaction, TxType } from '../types';
 import type { MessageKey } from '../i18n/messages';
 
 type TFn = (key: MessageKey) => string;
@@ -7,7 +7,9 @@ export type Action =
   | { kind: 'addTx'; tx: Omit<Transaction, 'id'>; id: string }
   | { kind: 'deleteTx'; id: string }
   | { kind: 'addCategory'; type: TxType; name: string }
-  | { kind: 'removeCategory'; type: TxType; name: string };
+  | { kind: 'removeCategory'; type: TxType; name: string }
+  | { kind: 'addAttachment'; txId: string; attachment: Attachment }
+  | { kind: 'removeAttachment'; txId: string; attachmentId: string };
 
 export const INIT_DATA: AppData = {
   cats: {
@@ -22,6 +24,7 @@ export const INIT_DATA: AppData = {
       category: 'التبرعات',
       description: 'تبرع شهري من أحد الأعضاء',
       amount: 500,
+      attachments: [],
     },
     {
       id: 'seed-2',
@@ -30,6 +33,7 @@ export const INIT_DATA: AppData = {
       category: 'الإيجار والمرافق',
       description: 'إيجار المكتب — أبريل',
       amount: 350,
+      attachments: [],
     },
     {
       id: 'seed-3',
@@ -38,6 +42,7 @@ export const INIT_DATA: AppData = {
       category: 'رسوم العضوية',
       description: 'رسوم عضوية أبريل',
       amount: 200,
+      attachments: [],
     },
     {
       id: 'seed-4',
@@ -46,6 +51,7 @@ export const INIT_DATA: AppData = {
       category: 'اللوازم المكتبية',
       description: 'ورق وطابعة',
       amount: 45,
+      attachments: [],
     },
     {
       id: 'seed-5',
@@ -54,6 +60,7 @@ export const INIT_DATA: AppData = {
       category: 'الفعاليات',
       description: 'حفل جمع التبرعات',
       amount: 800,
+      attachments: [],
     },
     {
       id: 'seed-6',
@@ -62,6 +69,7 @@ export const INIT_DATA: AppData = {
       category: 'الرواتب',
       description: 'رواتب شهر مارس',
       amount: 600,
+      attachments: [],
     },
     {
       id: 'seed-7',
@@ -70,6 +78,7 @@ export const INIT_DATA: AppData = {
       category: 'التبرعات',
       description: 'تبرع من شركة محلية',
       amount: 1200,
+      attachments: [],
     },
     {
       id: 'seed-8',
@@ -78,6 +87,7 @@ export const INIT_DATA: AppData = {
       category: 'الإيجار والمرافق',
       description: 'فاتورة الكهرباء',
       amount: 95,
+      attachments: [],
     },
   ],
 };
@@ -116,6 +126,32 @@ export function reduce(state: AppData, action: Action): AppData {
         },
       };
     }
+    case 'addAttachment': {
+      const tx = state.tx.find((t) => t.id === action.txId);
+      if (!tx) return state;
+      if (tx.attachments.some((a) => a.id === action.attachment.id)) return state;
+      return {
+        ...state,
+        tx: state.tx.map((t) =>
+          t.id === action.txId
+            ? { ...t, attachments: [...t.attachments, action.attachment] }
+            : t,
+        ),
+      };
+    }
+    case 'removeAttachment': {
+      const tx = state.tx.find((t) => t.id === action.txId);
+      if (!tx) return state;
+      if (!tx.attachments.some((a) => a.id === action.attachmentId)) return state;
+      return {
+        ...state,
+        tx: state.tx.map((t) =>
+          t.id === action.txId
+            ? { ...t, attachments: t.attachments.filter((a) => a.id !== action.attachmentId) }
+            : t,
+        ),
+      };
+    }
   }
 }
 
@@ -138,6 +174,15 @@ export function describeAction(state: AppData, action: Action, t: TFn): string {
     case 'removeCategory': {
       const verb = t(action.type === 'income' ? 'undo.removeCatIncome' : 'undo.removeCatExpense');
       return `${verb} · ${action.name}`;
+    }
+    case 'addAttachment': {
+      return `${t('undo.addAttachment')} · ${action.attachment.filename}`;
+    }
+    case 'removeAttachment': {
+      const tx = state.tx.find((x) => x.id === action.txId);
+      const att = tx?.attachments.find((a) => a.id === action.attachmentId);
+      if (!att) return t('undo.removeAttachment');
+      return `${t('undo.removeAttachment')} · ${att.filename}`;
     }
   }
 }

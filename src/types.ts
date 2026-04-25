@@ -1,5 +1,11 @@
 export type TxType = 'income' | 'expense';
 
+export type Attachment = {
+  id: string;
+  filename: string;
+  ext: string;
+};
+
 export type Transaction = {
   id: string;
   date: string;
@@ -7,6 +13,7 @@ export type Transaction = {
   category: string;
   description: string;
   amount: number;
+  attachments: Attachment[];
 };
 
 export type Categories = {
@@ -35,7 +42,7 @@ export type History = {
 };
 
 export type DiskFormat = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   history: History;
 };
 

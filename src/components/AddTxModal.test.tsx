@@ -63,6 +63,7 @@ describe('AddTxModal (Arabic default)', () => {
         category: 'التبرعات',
         amount: 125.5,
         description: 'تبرع تجريبي',
+        attachments: [],
       }),
     );
     expect(onClose).toHaveBeenCalledTimes(1);

@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AppData, Categories, History, Screen, Transaction, TxType } from '../types';
+import type {
+  AppData,
+  Attachment,
+  Categories,
+  History,
+  Screen,
+  Transaction,
+  TxType,
+} from '../types';
 import {
   canRedo,
   canUndo,
@@ -33,6 +41,8 @@ export type Store = {
   deleteTx: (id: string) => void;
   addCategory: (type: TxType, name: string) => void;
   removeCategory: (type: TxType, name: string) => void;
+  addAttachment: (txId: string, attachment: Attachment) => void;
+  removeAttachment: (txId: string, attachmentId: string) => void;
 
   undo: () => void;
   redo: () => void;
@@ -107,6 +117,9 @@ export function useStore(): Store {
     deleteTx: (id) => apply({ kind: 'deleteTx', id }),
     addCategory: (type, name) => apply({ kind: 'addCategory', type, name }),
     removeCategory: (type, name) => apply({ kind: 'removeCategory', type, name }),
+    addAttachment: (txId, attachment) => apply({ kind: 'addAttachment', txId, attachment }),
+    removeAttachment: (txId, attachmentId) =>
+      apply({ kind: 'removeAttachment', txId, attachmentId }),
     undo: () => setHistory((h) => undo(h)),
     redo: () => setHistory((h) => redo(h)),
     restoreSnapshot: (id) =>

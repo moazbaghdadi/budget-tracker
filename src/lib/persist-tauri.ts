@@ -8,7 +8,7 @@ import {
   writeTextFile,
 } from '@tauri-apps/plugin-fs';
 import type { DiskFormat } from '../types';
-import { APP_DIR, FILE, TMP_FILE, isValid } from './persist';
+import { APP_DIR, FILE, TMP_FILE, parseAndMigrate } from './persist';
 
 const DIR_OPT = { baseDir: BaseDirectory.AppConfig } as const;
 
@@ -23,7 +23,7 @@ export async function loadTauri(): Promise<DiskFormat | null> {
     if (!(await exists(`${APP_DIR}/${FILE}`, DIR_OPT))) return null;
     const raw = await readTextFile(`${APP_DIR}/${FILE}`, DIR_OPT);
     const parsed: unknown = JSON.parse(raw);
-    return isValid(parsed) ? parsed : null;
+    return parseAndMigrate(parsed);
   } catch {
     return null;
   }

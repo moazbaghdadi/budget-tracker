@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import type { Categories, Transaction } from '../types';
+import type { Attachment, Categories, Transaction } from '../types';
 import { Card } from '../components/Card';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/PageHeader';
 import { TxRow } from '../components/TxRow';
 import { AddTxModal, type NewTx } from '../components/AddTxModal';
+import { AttachmentsModal } from '../components/AttachmentsModal';
 import { IPlus, ISearch } from '../components/icons';
 import { inputStyle } from '../components/styles';
 import { useT } from '../i18n/LangProvider';
@@ -17,13 +18,26 @@ type Props = {
   categories: Categories;
   onAdd: (tx: NewTx) => void;
   onDelete: (id: string) => void;
+  onAddAttachment: (txId: string, attachment: Attachment) => void;
+  onRemoveAttachment: (txId: string, attachmentId: string) => void;
 };
 
-export function Transactions({ transactions, categories, onAdd, onDelete }: Props) {
+export function Transactions({
+  transactions,
+  categories,
+  onAdd,
+  onDelete,
+  onAddAttachment,
+  onRemoveAttachment,
+}: Props) {
   const { t } = useT();
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
+  const [attachmentsTxId, setAttachmentsTxId] = useState<string | null>(null);
+  const attachmentsTx = attachmentsTxId
+    ? transactions.find((tx) => tx.id === attachmentsTxId) ?? null
+    : null;
 
   const filtered = transactions
     .filter((t) => filter === 'all' || t.type === filter)
@@ -159,7 +173,13 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
             </thead>
             <tbody>
               {filtered.map((t) => (
-                <TxRow key={t.id} t={t} onDelete={onDelete} tableMode />
+                <TxRow
+                  key={t.id}
+                  t={t}
+                  onDelete={onDelete}
+                  onOpenAttachments={setAttachmentsTxId}
+                  tableMode
+                />
               ))}
             </tbody>
           </table>
@@ -171,6 +191,15 @@ export function Transactions({ transactions, categories, onAdd, onDelete }: Prop
           categories={categories}
           onAdd={onAdd}
           onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {attachmentsTx && (
+        <AttachmentsModal
+          tx={attachmentsTx}
+          onAdd={(a) => onAddAttachment(attachmentsTx.id, a)}
+          onRemove={(id) => onRemoveAttachment(attachmentsTx.id, id)}
+          onClose={() => setAttachmentsTxId(null)}
         />
       )}
     </div>

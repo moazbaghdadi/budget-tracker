@@ -99,6 +99,22 @@ const ar = {
   'undo.addCatExpense': 'إضافة فئة مصروف',
   'undo.removeCatIncome': 'حذف فئة دخل',
   'undo.removeCatExpense': 'حذف فئة مصروف',
+  'undo.addAttachment': 'إضافة مرفق',
+  'undo.removeAttachment': 'حذف مرفق',
+
+  'modal.field.attachments': 'المرفقات (اختياري)',
+  'modal.attachments.add': 'إرفاق ملف',
+  'modal.attachments.empty': 'لا توجد مرفقات',
+  'modal.attachments.remove': 'حذف',
+  'modal.attachments.open': 'فتح',
+  'modal.attachments.webDisabled': 'إرفاق الملفات متاح في تطبيق سطح المكتب فقط',
+  'modal.attachments.confirmRemove': 'هل تريد حذف هذا المرفق؟',
+  'modal.attachments.openError': 'تعذّر فتح الملف',
+  'modal.attachments.copyError': 'تعذّر نسخ الملف',
+
+  'tx.attachments.title': 'مرفقات المعاملة',
+  'tx.attachments.aria': 'مرفقات',
+  'tx.attachments.count': '{count} مرفق',
 } as const;
 
 const de: Record<keyof typeof ar, string> = {
@@ -198,6 +214,22 @@ const de: Record<keyof typeof ar, string> = {
   'undo.addCatExpense': 'Ausgabenkategorie hinzufügen',
   'undo.removeCatIncome': 'Einnahmekategorie löschen',
   'undo.removeCatExpense': 'Ausgabenkategorie löschen',
+  'undo.addAttachment': 'Anhang hinzugefügt',
+  'undo.removeAttachment': 'Anhang entfernt',
+
+  'modal.field.attachments': 'Anhänge (optional)',
+  'modal.attachments.add': 'Datei anhängen',
+  'modal.attachments.empty': 'Keine Anhänge',
+  'modal.attachments.remove': 'Entfernen',
+  'modal.attachments.open': 'Öffnen',
+  'modal.attachments.webDisabled': 'Datei-Anhänge sind nur in der Desktop-App verfügbar',
+  'modal.attachments.confirmRemove': 'Diesen Anhang wirklich entfernen?',
+  'modal.attachments.openError': 'Datei konnte nicht geöffnet werden',
+  'modal.attachments.copyError': 'Datei konnte nicht kopiert werden',
+
+  'tx.attachments.title': 'Anhänge',
+  'tx.attachments.aria': 'Anhänge',
+  'tx.attachments.count': '{count} Anhang/Anhänge',
 };
 
 export type MessageKey = keyof typeof ar;

@@ -12,7 +12,14 @@ describe('reduce: addTx', () => {
     const a: Action = {
       kind: 'addTx',
       id: 'abc',
-      tx: { date: '2026-04-10', type: 'income', category: 'X', description: '', amount: 10 },
+      tx: {
+        date: '2026-04-10',
+        type: 'income',
+        category: 'X',
+        description: '',
+        amount: 10,
+        attachments: [],
+      },
     };
     const next = reduce(blank, a);
     expect(next.tx).toHaveLength(1);
@@ -25,7 +32,14 @@ describe('reduce: addTx', () => {
     reduce(blank, {
       kind: 'addTx',
       id: 'abc',
-      tx: { date: '2026-04-10', type: 'income', category: 'X', description: '', amount: 10 },
+      tx: {
+        date: '2026-04-10',
+        type: 'income',
+        category: 'X',
+        description: '',
+        amount: 10,
+        attachments: [],
+      },
     });
     expect(JSON.stringify(blank)).toBe(before);
   });
@@ -35,8 +49,24 @@ describe('reduce: deleteTx', () => {
   const seeded: AppData = {
     cats: { income: [], expense: [] },
     tx: [
-      { id: '1', date: '2026-04-01', type: 'income', category: 'X', description: '', amount: 10 },
-      { id: '2', date: '2026-04-02', type: 'expense', category: 'Y', description: '', amount: 20 },
+      {
+        id: '1',
+        date: '2026-04-01',
+        type: 'income',
+        category: 'X',
+        description: '',
+        amount: 10,
+        attachments: [],
+      },
+      {
+        id: '2',
+        date: '2026-04-02',
+        type: 'expense',
+        category: 'Y',
+        description: '',
+        amount: 20,
+        attachments: [],
+      },
     ],
   };
 
@@ -91,6 +121,80 @@ describe('reduce: removeCategory', () => {
   });
 });
 
+describe('reduce: addAttachment / removeAttachment', () => {
+  const seeded: AppData = {
+    cats: { income: [], expense: [] },
+    tx: [
+      {
+        id: 't1',
+        date: '2026-04-01',
+        type: 'expense',
+        category: 'X',
+        description: '',
+        amount: 10,
+        attachments: [],
+      },
+    ],
+  };
+
+  it('addAttachment appends the attachment to the matching tx', () => {
+    const next = reduce(seeded, {
+      kind: 'addAttachment',
+      txId: 't1',
+      attachment: { id: 'a1', filename: 'invoice.pdf', ext: 'pdf' },
+    });
+    expect(next.tx[0].attachments).toEqual([
+      { id: 'a1', filename: 'invoice.pdf', ext: 'pdf' },
+    ]);
+  });
+
+  it('addAttachment is a no-op when txId is unknown', () => {
+    const next = reduce(seeded, {
+      kind: 'addAttachment',
+      txId: 'missing',
+      attachment: { id: 'a1', filename: 'x.pdf', ext: 'pdf' },
+    });
+    expect(next).toBe(seeded);
+  });
+
+  it('addAttachment does not duplicate existing ids', () => {
+    const once = reduce(seeded, {
+      kind: 'addAttachment',
+      txId: 't1',
+      attachment: { id: 'a1', filename: 'x.pdf', ext: 'pdf' },
+    });
+    const twice = reduce(once, {
+      kind: 'addAttachment',
+      txId: 't1',
+      attachment: { id: 'a1', filename: 'x.pdf', ext: 'pdf' },
+    });
+    expect(twice).toBe(once);
+  });
+
+  it('removeAttachment drops the matching attachment', () => {
+    const withAtt = reduce(seeded, {
+      kind: 'addAttachment',
+      txId: 't1',
+      attachment: { id: 'a1', filename: 'x.pdf', ext: 'pdf' },
+    });
+    const after = reduce(withAtt, {
+      kind: 'removeAttachment',
+      txId: 't1',
+      attachmentId: 'a1',
+    });
+    expect(after.tx[0].attachments).toEqual([]);
+  });
+
+  it('removeAttachment is a no-op for an unknown attachment id', () => {
+    const next = reduce(seeded, {
+      kind: 'removeAttachment',
+      txId: 't1',
+      attachmentId: 'nope',
+    });
+    expect(next).toBe(seeded);
+  });
+});
+
 describe('describeAction', () => {
   it('describes addTx with type, category, and amount (Arabic)', () => {
     const s = describeAction(
@@ -104,6 +208,7 @@ describe('describeAction', () => {
           category: 'التبرعات',
           description: '',
           amount: 500,
+          attachments: [],
         },
       },
       tAr,
@@ -126,6 +231,7 @@ describe('describeAction', () => {
           category: 'Miete',
           description: '',
           amount: 350,
+          attachments: [],
         },
       },
       tDe,
@@ -146,6 +252,7 @@ describe('describeAction', () => {
           category: 'الإيجار',
           description: '',
           amount: 350,
+          attachments: [],
         },
       ],
     };

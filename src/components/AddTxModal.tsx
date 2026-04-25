@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from 'react';
-import type { Categories, TxType } from '../types';
+import type { Attachment, Categories, TxType } from '../types';
 import { todayIso } from '../lib/format';
 import { IClose, IDown, IPlus, IUp } from './icons';
 import { inputStyle as inputSt } from './styles';
 import { useT } from '../i18n/LangProvider';
+import { AttachmentsList } from './AttachmentsList';
 
 function FLabel({ children }: { children: ReactNode }) {
   return (
@@ -19,6 +20,7 @@ export type NewTx = {
   description: string;
   amount: number;
   date: string;
+  attachments: Attachment[];
 };
 
 type Props = {
@@ -34,6 +36,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(todayIso());
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [error, setError] = useState('');
 
   const cats = type === 'income' ? categories.income : categories.expense;
@@ -42,7 +45,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
     if (!cat) return setError(t('modal.error.pickCategory'));
     const num = Number(amount);
     if (!amount || Number.isNaN(num) || num <= 0) return setError(t('modal.error.amount'));
-    onAdd({ type, category: cat, description: desc, amount: num, date });
+    onAdd({ type, category: cat, description: desc, amount: num, date, attachments });
     onClose();
   }
 
@@ -211,6 +214,13 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
           onChange={(e) => setDate(e.target.value)}
           type="date"
           style={{ ...inputSt, direction: 'ltr', textAlign: 'start' }}
+        />
+
+        <FLabel>{t('modal.field.attachments')}</FLabel>
+        <AttachmentsList
+          attachments={attachments}
+          onAdd={(a) => setAttachments((prev) => [...prev, a])}
+          onRemove={(id) => setAttachments((prev) => prev.filter((a) => a.id !== id))}
         />
 
         {error && (

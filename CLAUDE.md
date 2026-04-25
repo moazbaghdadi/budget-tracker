@@ -71,10 +71,15 @@
 - Detected at runtime via `isTauri()`:
   - In Tauri window → `@tauri-apps/plugin-fs` writes atomically to `$AppConfig/budget-tracker/data.json`
   - In browser → `localStorage` key `budget-tracker:data`
-- Disk format: `{ schemaVersion: 1, history }` — bump `schemaVersion` for migrations
+- Disk format: `{ schemaVersion: 2, history }` — bump `schemaVersion` and extend `parseAndMigrate` in `src/lib/persist.ts` for new migrations. v1 → v2 added `attachments: []` to every transaction.
 
 ## Undo-tree
 - `src/lib/history.ts` — every mutation creates a snapshot; non-leaf edits create branches
 - `restore(id)` is a forward commit (older snapshots are immutable)
 - Cap: 200 snapshots; oldest non-root, non-current nodes are dropped first with their
   children re-parented up so the chain stays connected
+
+## Attachments
+- Tauri-only feature (browser shows a disabled hint). Files are picked via `@tauri-apps/plugin-dialog`, copied by the Rust `copy_attachment` command into `$AppConfig/budget-tracker/attachments/<attachmentId>.<ext>`, and opened with the system default app via `@tauri-apps/plugin-opener`.
+- We never read attachment bytes into JS — no MIME detection, no size cap, no content inspection. The `Attachment` metadata in `data.json` only stores `{ id, filename, ext }`.
+- **No GC.** Files on disk are never deleted: removing an attachment from a transaction (or deleting the transaction) leaves the file in place because past undo-tree snapshots may still reference it. A future GC pass tied to snapshot eviction is out of scope.

@@ -30,6 +30,7 @@ function withTx(label: string): AppData {
         category: 'X',
         description: '',
         amount: 1,
+        attachments: [],
       },
     ],
     cats: { income: [], expense: [] },
