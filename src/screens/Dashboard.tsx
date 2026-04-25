@@ -1,5 +1,6 @@
 import type { Transaction, Screen } from '../types';
 import { parseDate } from '../lib/format';
+import { bucketBalance, sumByType, totalBalance } from '../lib/balance';
 import { Card } from '../components/Card';
 import { EmptyState } from '../components/EmptyState';
 import { SectionTitle } from '../components/SectionTitle';
@@ -12,10 +13,6 @@ type Props = {
   transactions: Transaction[];
   setScreen: (s: Screen) => void;
 };
-
-function sumByType(arr: Transaction[], type: 'income' | 'expense'): number {
-  return arr.filter((t) => t.type === type).reduce((s, t) => s + t.amount, 0);
-}
 
 export function Dashboard({ transactions, setScreen }: Props) {
   const { t, fmtMoney, fmtMoneyAbs, fmtMonth } = useT();
@@ -35,7 +32,9 @@ export function Dashboard({ transactions, setScreen }: Props) {
   const mN = mI - mE;
   const yI = sumByType(yearly, 'income');
   const yE = sumByType(yearly, 'expense');
-  const total = sumByType(transactions, 'income') - sumByType(transactions, 'expense');
+  const total = totalBalance(transactions);
+  const bankBal = bucketBalance(transactions, 'bank');
+  const cashBal = bucketBalance(transactions, 'cash');
 
   const recent = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8);
 
@@ -97,7 +96,26 @@ export function Dashboard({ transactions, setScreen }: Props) {
           <div>
             <p style={{ fontSize: 14, opacity: 0.8, marginBottom: 8 }}>{t('dashboard.balance')}</p>
             <p style={{ fontSize: 52, fontWeight: 700, letterSpacing: -1 }}>{fmtMoney(total)}</p>
-            <p style={{ fontSize: 13, opacity: 0.7, marginTop: 8 }}>{fmtMonth(currentYm)}</p>
+            <div
+              style={{
+                display: 'flex',
+                gap: 24,
+                marginTop: 12,
+                opacity: 0.85,
+                fontSize: 15,
+                flexWrap: 'wrap',
+              }}
+            >
+              <span>
+                <span style={{ opacity: 0.75 }}>{t('dashboard.bankBalance')}:</span>{' '}
+                <strong>{fmtMoney(bankBal)}</strong>
+              </span>
+              <span>
+                <span style={{ opacity: 0.75 }}>{t('dashboard.cashBalance')}:</span>{' '}
+                <strong>{fmtMoney(cashBal)}</strong>
+              </span>
+            </div>
+            <p style={{ fontSize: 13, opacity: 0.7, marginTop: 10 }}>{fmtMonth(currentYm)}</p>
           </div>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ textAlign: 'center' }}>

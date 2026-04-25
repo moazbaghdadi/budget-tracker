@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { addTransaction, applyTestGlobals, clearAppData } from './_helpers';
+import { addCategory, addTransaction, applyTestGlobals, clearAppData } from './_helpers';
 
 test.beforeEach(async ({ page }) => {
   await applyTestGlobals(page);
@@ -9,6 +9,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('add an income transaction → it appears on Transactions screen', async ({ page }) => {
+  await addCategory(page, 'income', 'التبرعات');
   await page.getByRole('button', { name: 'المعاملات' }).click();
   await addTransaction(page, {
     type: 'income',
@@ -21,6 +22,7 @@ test('add an income transaction → it appears on Transactions screen', async ({
 });
 
 test('delete a transaction (with confirm) removes it from the table', async ({ page }) => {
+  await addCategory(page, 'expense', 'الرواتب');
   await page.getByRole('button', { name: 'المعاملات' }).click();
   await addTransaction(page, {
     type: 'expense',

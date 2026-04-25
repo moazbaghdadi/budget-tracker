@@ -6,7 +6,6 @@ import type {
   History,
   Screen,
   Transaction,
-  TxType,
 } from '../types';
 import {
   canRedo,
@@ -21,7 +20,7 @@ import {
   undo,
   undoLabel,
 } from './history';
-import { describeAction, INIT_DATA, reduce, type Action } from './reducer';
+import { describeAction, INIT_DATA, reduce, type Action, type CategoryType } from './reducer';
 import { emptyDisk, load, save } from './persist';
 import { useT } from '../i18n/LangProvider';
 
@@ -39,8 +38,8 @@ export type Store = {
 
   addTx: (tx: Omit<Transaction, 'id'>) => void;
   deleteTx: (id: string) => void;
-  addCategory: (type: TxType, name: string) => void;
-  removeCategory: (type: TxType, name: string) => void;
+  addCategory: (type: CategoryType, name: string) => void;
+  removeCategory: (type: CategoryType, name: string) => void;
   addAttachment: (txId: string, attachment: Attachment) => void;
   removeAttachment: (txId: string, attachmentId: string) => void;
 

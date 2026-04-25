@@ -1,15 +1,17 @@
 import { useState, type ReactNode } from 'react';
-import type { Categories as Cats, TxType } from '../types';
+import type { Categories as Cats } from '../types';
 import { Card } from '../components/Card';
 import { PageHeader } from '../components/PageHeader';
 import { IDown, IPlus, ITrash, IUp } from '../components/icons';
 import { inputStyle } from '../components/styles';
 import { useT } from '../i18n/LangProvider';
 
+type CatType = 'income' | 'expense';
+
 type Props = {
   categories: Cats;
-  onAdd: (type: TxType, name: string) => void;
-  onRemove: (type: TxType, name: string) => void;
+  onAdd: (type: CatType, name: string) => void;
+  onRemove: (type: CatType, name: string) => void;
 };
 
 export function CategoriesScreen({ categories, onAdd, onRemove }: Props) {

@@ -34,7 +34,7 @@ test('switching to Deutsch flips html dir/lang and updates UI', async ({ page })
   await expect(page.getByRole('button', { name: 'Verlauf' })).toBeVisible();
 
   // The dashboard balance card shows currency in German convention (number then €).
-  // With seed data there's a positive balance; we just check that the € comes after the digits.
+  // Empty-state balance card renders "0,00 €" in German — assert digit-then-€ ordering.
   const balanceCard = page.locator('text=/\\d.*€/').first();
   await expect(balanceCard).toBeVisible();
 });

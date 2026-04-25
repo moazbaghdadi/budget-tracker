@@ -23,6 +23,22 @@ export async function clearAppData(page: Page): Promise<void> {
   }, STORAGE_KEY);
 }
 
+/**
+ * Add a category by navigating to the Categories screen and using the
+ * relevant "Add" form (income panel is rendered first, expense second).
+ * Leaves the user on the Categories screen — callers should navigate back.
+ */
+export async function addCategory(
+  page: Page,
+  type: 'income' | 'expense',
+  name: string,
+): Promise<void> {
+  const idx = type === 'income' ? 0 : 1;
+  await page.getByRole('button', { name: 'الفئات' }).click();
+  await page.getByLabel('اسم الفئة الجديدة').nth(idx).fill(name);
+  await page.getByRole('button', { name: /^إضافة فئة$/ }).nth(idx).click();
+}
+
 /** Open the AddTxModal and fill it via the same UI a user would. */
 export async function addTransaction(
   page: Page,

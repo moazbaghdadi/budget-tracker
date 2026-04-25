@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from 'react';
-import type { Attachment, Categories, TxType } from '../types';
+import type { Attachment, Bucket, Categories, TxType } from '../types';
 import { todayIso } from '../lib/format';
-import { IClose, IDown, IPlus, IUp } from './icons';
+import { IClose, IDown, IPlus, ITrans, IUp } from './icons';
 import { inputStyle as inputSt } from './styles';
 import { useT } from '../i18n/LangProvider';
 import { AttachmentsList } from './AttachmentsList';
+import type { MessageKey } from '../i18n/messages';
 
 function FLabel({ children }: { children: ReactNode }) {
   return (
@@ -21,6 +22,8 @@ export type NewTx = {
   amount: number;
   date: string;
   attachments: Attachment[];
+  bucket: Bucket;
+  toBucket?: Bucket;
 };
 
 type Props = {
@@ -29,9 +32,20 @@ type Props = {
   onClose: () => void;
 };
 
+const BUCKETS: ReadonlyArray<readonly [Bucket, MessageKey]> = [
+  ['bank', 'bucket.bank'],
+  ['cash', 'bucket.cash'],
+];
+
+function flip(b: Bucket): Bucket {
+  return b === 'bank' ? 'cash' : 'bank';
+}
+
 export function AddTxModal({ categories, onAdd, onClose }: Props) {
   const { t } = useT();
   const [type, setType] = useState<TxType>('income');
+  const [bucket, setBucket] = useState<Bucket>('bank');
+  const [toBucket, setToBucket] = useState<Bucket>('cash');
   const [cat, setCat] = useState('');
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
@@ -39,15 +53,44 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [error, setError] = useState('');
 
-  const cats = type === 'income' ? categories.income : categories.expense;
+  const isTransfer = type === 'transfer';
+  const cats = type === 'income' ? categories.income : type === 'expense' ? categories.expense : [];
+
+  function pickFromBucket(next: Bucket) {
+    setBucket(next);
+    if (next === toBucket) setToBucket(flip(next));
+  }
+  function pickToBucket(next: Bucket) {
+    setToBucket(next);
+    if (next === bucket) setBucket(flip(next));
+  }
 
   function handleAdd() {
-    if (!cat) return setError(t('modal.error.pickCategory'));
+    if (!isTransfer && !cat) return setError(t('modal.error.pickCategory'));
     const num = Number(amount);
     if (!amount || Number.isNaN(num) || num <= 0) return setError(t('modal.error.amount'));
-    onAdd({ type, category: cat, description: desc, amount: num, date, attachments });
+    const tx: NewTx = {
+      type,
+      category: isTransfer ? '' : cat,
+      description: desc,
+      amount: num,
+      date,
+      attachments,
+      bucket,
+      ...(isTransfer ? { toBucket } : {}),
+    };
+    onAdd(tx);
     onClose();
   }
+
+  const accent =
+    type === 'income' ? 'var(--green)' : type === 'expense' ? 'var(--red)' : 'var(--teal)';
+  const accentLight =
+    type === 'income'
+      ? 'var(--green-light)'
+      : type === 'expense'
+        ? 'var(--red-light)'
+        : 'var(--teal-light)';
 
   return (
     <div
@@ -109,45 +152,41 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
 
         <FLabel>{t('modal.field.type')}</FLabel>
         <div
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gap: 10,
+            marginBottom: 20,
+          }}
         >
           {(
             [
-              ['income', t('tx.typeIncome'), <IUp key="up" s={18} />],
-              ['expense', t('tx.typeExpense'), <IDown key="down" s={18} />],
+              ['income', t('tx.typeIncome'), <IUp key="up" s={18} />, 'var(--green)', 'var(--green-light)'],
+              ['expense', t('tx.typeExpense'), <IDown key="down" s={18} />, 'var(--red)', 'var(--red-light)'],
+              ['transfer', t('tx.typeTransfer'), <ITrans key="trans" s={18} />, 'var(--teal)', 'var(--teal-light)'],
             ] as const
-          ).map(([v, l, ico]) => (
+          ).map(([v, l, ico, c, lc]) => (
             <button
               key={v}
               onClick={() => {
                 setType(v);
                 setCat('');
+                setError('');
               }}
               style={{
-                padding: '14px',
+                padding: '14px 8px',
                 borderRadius: 12,
                 border: '2px solid',
-                borderColor:
-                  type === v
-                    ? v === 'income'
-                      ? 'var(--green)'
-                      : 'var(--red)'
-                    : 'var(--border)',
-                background:
-                  type === v
-                    ? v === 'income'
-                      ? 'var(--green-light)'
-                      : 'var(--red-light)'
-                    : '#fff',
-                color:
-                  type === v ? (v === 'income' ? 'var(--green)' : 'var(--red)') : 'var(--text-muted)',
-                fontSize: 17,
+                borderColor: type === v ? c : 'var(--border)',
+                background: type === v ? lc : '#fff',
+                color: type === v ? c : 'var(--text-muted)',
+                fontSize: 16,
                 fontWeight: 700,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 8,
+                gap: 6,
               }}
             >
               {ico} {l}
@@ -155,31 +194,65 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
           ))}
         </div>
 
-        <FLabel>{t('modal.field.category')}</FLabel>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-          {cats.length === 0 && (
-            <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>{t('modal.noCategories')}</p>
-          )}
-          {cats.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              style={{
-                padding: '10px 16px',
-                borderRadius: 10,
-                border: '2px solid',
-                borderColor: cat === c ? 'var(--teal)' : 'var(--border)',
-                background: cat === c ? 'var(--teal-light)' : '#fff',
-                color: cat === c ? 'var(--teal)' : 'var(--text)',
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        {isTransfer ? (
+          <>
+            <FLabel>{t('modal.field.fromBucket')}</FLabel>
+            <BucketSelect
+              value={bucket}
+              onChange={pickFromBucket}
+              accent={accent}
+              accentLight={accentLight}
+              t={t}
+            />
+            <FLabel>{t('modal.field.toBucket')}</FLabel>
+            <BucketSelect
+              value={toBucket}
+              onChange={pickToBucket}
+              accent={accent}
+              accentLight={accentLight}
+              t={t}
+            />
+          </>
+        ) : (
+          <>
+            <FLabel>{t('modal.field.bucket')}</FLabel>
+            <BucketSelect
+              value={bucket}
+              onChange={setBucket}
+              accent={accent}
+              accentLight={accentLight}
+              t={t}
+            />
+
+            <FLabel>{t('modal.field.category')}</FLabel>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+              {cats.length === 0 && (
+                <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
+                  {t('modal.noCategories')}
+                </p>
+              )}
+              {cats.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCat(c)}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: 10,
+                    border: '2px solid',
+                    borderColor: cat === c ? 'var(--teal)' : 'var(--border)',
+                    background: cat === c ? 'var(--teal-light)' : '#fff',
+                    color: cat === c ? 'var(--teal)' : 'var(--text)',
+                    fontSize: 15,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
         <FLabel>{t('modal.field.description')}</FLabel>
         <input
@@ -244,7 +317,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
             padding: '18px',
             borderRadius: 14,
             border: 'none',
-            background: type === 'income' ? 'var(--green)' : 'var(--red)',
+            background: accent,
             color: '#fff',
             fontSize: 18,
             fontWeight: 700,
@@ -263,3 +336,47 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
   );
 }
 
+function BucketSelect({
+  value,
+  onChange,
+  accent,
+  accentLight,
+  t,
+}: {
+  value: Bucket;
+  onChange: (b: Bucket) => void;
+  accent: string;
+  accentLight: string;
+  t: (k: MessageKey) => string;
+}) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 10,
+        marginBottom: 20,
+      }}
+    >
+      {BUCKETS.map(([v, key]) => (
+        <button
+          key={v}
+          onClick={() => onChange(v)}
+          style={{
+            padding: '12px',
+            borderRadius: 12,
+            border: '2px solid',
+            borderColor: value === v ? accent : 'var(--border)',
+            background: value === v ? accentLight : '#fff',
+            color: value === v ? accent : 'var(--text-muted)',
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          {t(key)}
+        </button>
+      ))}
+    </div>
+  );
+}

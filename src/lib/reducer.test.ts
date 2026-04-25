@@ -19,12 +19,14 @@ describe('reduce: addTx', () => {
         description: '',
         amount: 10,
         attachments: [],
+        bucket: 'bank',
       },
     };
     const next = reduce(blank, a);
     expect(next.tx).toHaveLength(1);
     expect(next.tx[0].id).toBe('abc');
     expect(next.tx[0].amount).toBe(10);
+    expect(next.tx[0].bucket).toBe('bank');
   });
 
   it('does not mutate the input state', () => {
@@ -39,9 +41,66 @@ describe('reduce: addTx', () => {
         description: '',
         amount: 10,
         attachments: [],
+        bucket: 'bank',
       },
     });
     expect(JSON.stringify(blank)).toBe(before);
+  });
+
+  it('appends a transfer with bucket and toBucket preserved', () => {
+    const next = reduce(blank, {
+      kind: 'addTx',
+      id: 'tr1',
+      tx: {
+        date: '2026-04-10',
+        type: 'transfer',
+        category: '',
+        description: 'cash withdrawal',
+        amount: 50,
+        attachments: [],
+        bucket: 'bank',
+        toBucket: 'cash',
+      },
+    });
+    expect(next.tx).toHaveLength(1);
+    expect(next.tx[0].type).toBe('transfer');
+    expect(next.tx[0].bucket).toBe('bank');
+    expect(next.tx[0].toBucket).toBe('cash');
+  });
+
+  it('drops a transfer with no toBucket', () => {
+    const next = reduce(blank, {
+      kind: 'addTx',
+      id: 'bad',
+      tx: {
+        date: '2026-04-10',
+        type: 'transfer',
+        category: '',
+        description: '',
+        amount: 50,
+        attachments: [],
+        bucket: 'bank',
+      },
+    });
+    expect(next).toBe(blank);
+  });
+
+  it('drops a transfer where toBucket equals bucket', () => {
+    const next = reduce(blank, {
+      kind: 'addTx',
+      id: 'bad',
+      tx: {
+        date: '2026-04-10',
+        type: 'transfer',
+        category: '',
+        description: '',
+        amount: 50,
+        attachments: [],
+        bucket: 'cash',
+        toBucket: 'cash',
+      },
+    });
+    expect(next).toBe(blank);
   });
 });
 
@@ -57,6 +116,7 @@ describe('reduce: deleteTx', () => {
         description: '',
         amount: 10,
         attachments: [],
+        bucket: 'bank',
       },
       {
         id: '2',
@@ -66,6 +126,7 @@ describe('reduce: deleteTx', () => {
         description: '',
         amount: 20,
         attachments: [],
+        bucket: 'bank',
       },
     ],
   };
@@ -133,6 +194,7 @@ describe('reduce: addAttachment / removeAttachment', () => {
         description: '',
         amount: 10,
         attachments: [],
+        bucket: 'bank',
       },
     ],
   };
@@ -209,6 +271,7 @@ describe('describeAction', () => {
           description: '',
           amount: 500,
           attachments: [],
+          bucket: 'bank',
         },
       },
       tAr,
@@ -232,6 +295,7 @@ describe('describeAction', () => {
           description: '',
           amount: 350,
           attachments: [],
+          bucket: 'bank',
         },
       },
       tDe,
@@ -239,6 +303,31 @@ describe('describeAction', () => {
     expect(s).toContain(messages.de['undo.addExpense']);
     expect(s).toContain('Miete');
     expect(s).toContain('350');
+  });
+
+  it('describes a transfer with both bucket labels and the arrow', () => {
+    const s = describeAction(
+      blank,
+      {
+        kind: 'addTx',
+        id: 'x',
+        tx: {
+          date: '2026-04-10',
+          type: 'transfer',
+          category: '',
+          description: '',
+          amount: 50,
+          attachments: [],
+          bucket: 'bank',
+          toBucket: 'cash',
+        },
+      },
+      tAr,
+    );
+    expect(s).toContain(messages.ar['undo.addTransfer']);
+    expect(s).toContain(messages.ar['bucket.bank']);
+    expect(s).toContain(messages.ar['bucket.cash']);
+    expect(s).toContain('→');
   });
 
   it('describes deleteTx using the existing transaction', () => {
@@ -253,6 +342,7 @@ describe('describeAction', () => {
           description: '',
           amount: 350,
           attachments: [],
+          bucket: 'bank',
         },
       ],
     };
@@ -280,13 +370,9 @@ describe('describeAction', () => {
 });
 
 describe('INIT_DATA', () => {
-  it('matches the design seed data shape', () => {
-    expect(INIT_DATA.tx.length).toBeGreaterThan(0);
-    expect(INIT_DATA.cats.income).toContain('التبرعات');
-    expect(INIT_DATA.cats.expense).toContain('الإيجار والمرافق');
-    INIT_DATA.tx.forEach((t) => {
-      expect(t.id).toMatch(/^seed-/);
-      expect(['income', 'expense']).toContain(t.type);
-    });
+  it('starts empty so new users begin from scratch', () => {
+    expect(INIT_DATA.tx).toEqual([]);
+    expect(INIT_DATA.cats.income).toEqual([]);
+    expect(INIT_DATA.cats.expense).toEqual([]);
   });
 });

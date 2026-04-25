@@ -31,6 +31,7 @@ function withTx(label: string): AppData {
         description: '',
         amount: 1,
         attachments: [],
+        bucket: 'bank',
       },
     ],
     cats: { income: [], expense: [] },

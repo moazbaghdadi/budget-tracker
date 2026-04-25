@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Attachment, Categories, Transaction } from '../types';
+import type { Attachment, Bucket, Categories, Transaction } from '../types';
 import { Card } from '../components/Card';
 import { EmptyState } from '../components/EmptyState';
 import { PageHeader } from '../components/PageHeader';
@@ -11,7 +11,8 @@ import { inputStyle } from '../components/styles';
 import { useT } from '../i18n/LangProvider';
 import type { MessageKey } from '../i18n/messages';
 
-type Filter = 'all' | 'income' | 'expense';
+type Filter = 'all' | 'income' | 'expense' | 'transfer';
+type BucketFilter = 'all' | Bucket;
 
 type Props = {
   transactions: Transaction[];
@@ -33,6 +34,7 @@ export function Transactions({
   const { t } = useT();
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
+  const [bucketFilter, setBucketFilter] = useState<BucketFilter>('all');
   const [search, setSearch] = useState('');
   const [attachmentsTxId, setAttachmentsTxId] = useState<string | null>(null);
   const attachmentsTx = attachmentsTxId
@@ -41,6 +43,12 @@ export function Transactions({
 
   const filtered = transactions
     .filter((t) => filter === 'all' || t.type === filter)
+    .filter(
+      (t) =>
+        bucketFilter === 'all' ||
+        t.bucket === bucketFilter ||
+        t.toBucket === bucketFilter,
+    )
     .filter(
       (t) => !search || t.description?.includes(search) || t.category.includes(search),
     )
@@ -74,68 +82,92 @@ export function Transactions({
         }
       />
 
-      <div
-        style={{
-          display: 'flex',
-          gap: 10,
-          marginBottom: 20,
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ display: 'flex', gap: 6 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+        <div
+          style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}
+        >
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {(
+              [
+                ['all', 'tx.filterAll'],
+                ['income', 'tx.filterIncome'],
+                ['expense', 'tx.filterExpense'],
+                ['transfer', 'tx.filterTransfer'],
+              ] as const satisfies ReadonlyArray<readonly [Filter, MessageKey]>
+            ).map(([v, key]) => (
+              <button
+                key={v}
+                onClick={() => setFilter(v)}
+                style={{
+                  padding: '9px 18px',
+                  borderRadius: 20,
+                  border: '2px solid',
+                  borderColor: filter === v ? 'var(--teal)' : 'var(--border)',
+                  background: filter === v ? 'var(--teal-light)' : '#fff',
+                  color: filter === v ? 'var(--teal)' : 'var(--text-muted)',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                {t(key)}
+              </button>
+            ))}
+          </div>
+          <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
+            <span
+              style={{
+                position: 'absolute',
+                top: '50%',
+                insetInlineStart: 14,
+                transform: 'translateY(-50%)',
+                color: 'var(--text-muted)',
+                pointerEvents: 'none',
+              }}
+            >
+              <ISearch s={18} />
+            </span>
+            <input
+              aria-label={t('tx.search')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('tx.searchPlaceholder')}
+              style={{
+                ...inputStyle,
+                marginBottom: 0,
+                paddingInlineStart: 42,
+                paddingTop: 10,
+                paddingBottom: 10,
+              }}
+            />
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {(
             [
-              ['all', 'tx.filterAll'],
-              ['income', 'tx.filterIncome'],
-              ['expense', 'tx.filterExpense'],
-            ] as const satisfies ReadonlyArray<readonly [Filter, MessageKey]>
+              ['all', 'tx.filterAllBuckets'],
+              ['bank', 'tx.filterBank'],
+              ['cash', 'tx.filterCash'],
+            ] as const satisfies ReadonlyArray<readonly [BucketFilter, MessageKey]>
           ).map(([v, key]) => (
             <button
               key={v}
-              onClick={() => setFilter(v)}
+              onClick={() => setBucketFilter(v)}
               style={{
-                padding: '9px 18px',
-                borderRadius: 20,
-                border: '2px solid',
-                borderColor: filter === v ? 'var(--teal)' : 'var(--border)',
-                background: filter === v ? 'var(--teal-light)' : '#fff',
-                color: filter === v ? 'var(--teal)' : 'var(--text-muted)',
-                fontSize: 14,
-                fontWeight: 700,
+                padding: '7px 14px',
+                borderRadius: 16,
+                border: '1.5px solid',
+                borderColor: bucketFilter === v ? 'var(--teal)' : 'var(--border)',
+                background: bucketFilter === v ? 'var(--teal-light)' : '#fff',
+                color: bucketFilter === v ? 'var(--teal)' : 'var(--text-muted)',
+                fontSize: 13,
+                fontWeight: 600,
                 cursor: 'pointer',
               }}
             >
               {t(key)}
             </button>
           ))}
-        </div>
-        <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
-          <span
-            style={{
-              position: 'absolute',
-              top: '50%',
-              insetInlineStart: 14,
-              transform: 'translateY(-50%)',
-              color: 'var(--text-muted)',
-              pointerEvents: 'none',
-            }}
-          >
-            <ISearch s={18} />
-          </span>
-          <input
-            aria-label={t('tx.search')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('tx.searchPlaceholder')}
-            style={{
-              ...inputStyle,
-              marginBottom: 0,
-              paddingInlineStart: 42,
-              paddingTop: 10,
-              paddingBottom: 10,
-            }}
-          />
         </div>
       </div>
 
@@ -150,6 +182,7 @@ export function Transactions({
                   [
                     'tx.col.date',
                     'tx.col.type',
+                    'tx.col.bucket',
                     'tx.col.category',
                     'tx.col.description',
                     'tx.col.amount',

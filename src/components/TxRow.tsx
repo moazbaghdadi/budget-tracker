@@ -1,8 +1,11 @@
 import type { CSSProperties } from 'react';
-import type { Transaction } from '../types';
-import { IDown, IPaperclip, ITrash, IUp } from './icons';
+import type { Bucket, Transaction } from '../types';
+import { IDown, IPaperclip, ITrans, ITrash, IUp } from './icons';
 import { useT } from '../i18n/LangProvider';
 import { attachmentsSupported } from '../lib/attachments';
+import type { MessageKey } from '../i18n/messages';
+
+const bucketKey = (b: Bucket): MessageKey => (b === 'bank' ? 'bucket.bank' : 'bucket.cash');
 
 const tdS: CSSProperties = {
   padding: '14px 16px',
@@ -20,10 +23,21 @@ type Props = {
 
 export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
   const { t: tr, fmtMoneyAbs, fmtDate } = useT();
+  const isTransfer = t.type === 'transfer';
   const inc = t.type === 'income';
   const dayStr = fmtDate(t.date);
-  const sign = inc ? '+' : '-';
-  const typeLabel = tr(inc ? 'tx.typeIncome' : 'tx.typeExpense');
+  const sign = isTransfer ? '' : inc ? '+' : '-';
+  const typeLabel = isTransfer
+    ? tr('tx.typeTransfer')
+    : tr(inc ? 'tx.typeIncome' : 'tx.typeExpense');
+  const bucketLabel = tr(bucketKey(t.bucket));
+  const bucketCellText = isTransfer && t.toBucket
+    ? `${tr(bucketKey(t.bucket))} → ${tr(bucketKey(t.toBucket))}`
+    : bucketLabel;
+  const amountColor = isTransfer ? 'var(--teal)' : inc ? 'var(--green)' : 'var(--red)';
+  const badgeBg = isTransfer ? 'var(--teal-light)' : inc ? 'var(--green-light)' : 'var(--red-light)';
+  const badgeColor = amountColor;
+  const TypeIcon = isTransfer ? ITrans : inc ? IUp : IDown;
   const deleteAria = tr('tx.deleteAria');
   const attCount = t.attachments.length;
   const showPaperclip = onOpenAttachments && (attCount > 0 || attachmentsSupported());
@@ -70,20 +84,21 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
               borderRadius: 20,
               fontSize: 13,
               fontWeight: 700,
-              background: inc ? 'var(--green-light)' : 'var(--red-light)',
-              color: inc ? 'var(--green)' : 'var(--red)',
+              background: badgeBg,
+              color: badgeColor,
             }}
           >
-            {inc ? <IUp s={14} /> : <IDown s={14} />} {typeLabel}
+            <TypeIcon s={14} /> {typeLabel}
           </span>
         </td>
-        <td style={tdS}>{t.category}</td>
+        <td style={{ ...tdS, direction: 'ltr', textAlign: 'start' }}>{bucketCellText}</td>
+        <td style={tdS}>{isTransfer ? '—' : t.category}</td>
         <td style={tdS}>{t.description || '—'}</td>
         <td
           style={{
             ...tdS,
             fontWeight: 700,
-            color: inc ? 'var(--green)' : 'var(--red)',
+            color: amountColor,
             direction: 'ltr',
             textAlign: 'right',
           }}
@@ -137,14 +152,14 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
           height: 46,
           borderRadius: 12,
           flexShrink: 0,
-          background: inc ? 'var(--green-light)' : 'var(--red-light)',
+          background: badgeBg,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: inc ? 'var(--green)' : 'var(--red)',
+          color: amountColor,
         }}
       >
-        {inc ? <IUp s={20} /> : <IDown s={20} />}
+        <TypeIcon s={20} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p
@@ -157,10 +172,10 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
             whiteSpace: 'nowrap',
           }}
         >
-          {t.description || t.category}
+          {t.description || (isTransfer ? typeLabel : t.category)}
         </p>
         <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-          {t.category} · {dayStr}
+          {bucketCellText} · {isTransfer ? typeLabel : t.category} · {dayStr}
         </p>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -168,7 +183,7 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
           style={{
             fontSize: 17,
             fontWeight: 700,
-            color: inc ? 'var(--green)' : 'var(--red)',
+            color: amountColor,
             direction: 'ltr',
           }}
         >

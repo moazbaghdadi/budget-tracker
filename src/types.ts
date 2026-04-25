@@ -1,4 +1,6 @@
-export type TxType = 'income' | 'expense';
+export type TxType = 'income' | 'expense' | 'transfer';
+
+export type Bucket = 'bank' | 'cash';
 
 export type Attachment = {
   id: string;
@@ -14,6 +16,8 @@ export type Transaction = {
   description: string;
   amount: number;
   attachments: Attachment[];
+  bucket: Bucket;
+  toBucket?: Bucket;
 };
 
 export type Categories = {
@@ -42,7 +46,7 @@ export type History = {
 };
 
 export type DiskFormat = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   history: History;
 };
 

@@ -64,44 +64,14 @@ describe('load', () => {
   });
 
   it('returns null when history is missing', async () => {
-    fsState.files.set(FULL_PATH, JSON.stringify({ schemaVersion: 2 }));
+    fsState.files.set(FULL_PATH, JSON.stringify({ schemaVersion: 3 }));
     expect(await load()).toBeNull();
   });
 
-  it('migrates a v1 payload by adding empty attachments to every transaction', async () => {
-    const v1 = {
-      schemaVersion: 1,
-      history: {
-        rootId: 'r',
-        currentId: 'r',
-        nodes: {
-          r: {
-            id: 'r',
-            parentId: null,
-            childIds: [],
-            createdAt: 0,
-            label: 'root',
-            data: {
-              cats: { income: [], expense: [] },
-              tx: [
-                {
-                  id: 't1',
-                  date: '2026-04-01',
-                  type: 'expense',
-                  category: 'A',
-                  description: 'old',
-                  amount: 10,
-                },
-              ],
-            },
-          },
-        },
-      },
-    };
-    fsState.files.set(FULL_PATH, JSON.stringify(v1));
-    const loaded = await load();
-    expect(loaded?.schemaVersion).toBe(2);
-    expect(loaded?.history.nodes.r.data.tx[0].attachments).toEqual([]);
+  it('returns null on a pre-v3 payload — no migration is provided, so old data is discarded', async () => {
+    const v2 = { schemaVersion: 2, history: { rootId: 'r', currentId: 'r', nodes: {} } };
+    fsState.files.set(FULL_PATH, JSON.stringify(v2));
+    expect(await load()).toBeNull();
   });
 
   it('returns the parsed payload on success', async () => {
@@ -173,7 +143,7 @@ describe('emptyDisk', () => {
       { tx: [], cats: { income: [], expense: [] } },
       { idGen: () => 'r', now: () => 0 },
     );
-    expect(emptyDisk(h).schemaVersion).toBe(2);
+    expect(emptyDisk(h).schemaVersion).toBe(3);
     expect(emptyDisk(h).history).toBe(h);
   });
 });

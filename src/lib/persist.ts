@@ -1,8 +1,8 @@
-import type { DiskFormat, Snapshot, Transaction } from '../types';
+import type { DiskFormat } from '../types';
 import { loadTauri, saveTauri } from './persist-tauri';
 import { loadWeb, saveWeb } from './persist-web';
 
-const SCHEMA_VERSION = 2 as const;
+const SCHEMA_VERSION = 3 as const;
 
 export const FILE = 'data.json';
 export const TMP_FILE = 'data.json.tmp';
@@ -38,27 +38,5 @@ export function parseAndMigrate(parsed: unknown): DiskFormat | null {
   if (obj.schemaVersion === SCHEMA_VERSION) {
     return parsed as DiskFormat;
   }
-  if (obj.schemaVersion === 1) {
-    return migrateV1ToV2(obj as { schemaVersion: 1; history: DiskFormat['history'] });
-  }
   return null;
-}
-
-function migrateV1ToV2(v1: { schemaVersion: 1; history: DiskFormat['history'] }): DiskFormat {
-  const nodes: Record<string, Snapshot> = {};
-  for (const [id, snap] of Object.entries(v1.history.nodes)) {
-    nodes[id] = {
-      ...snap,
-      data: {
-        ...snap.data,
-        tx: snap.data.tx.map(
-          (t): Transaction => ({ ...t, attachments: t.attachments ?? [] }),
-        ),
-      },
-    };
-  }
-  return {
-    schemaVersion: SCHEMA_VERSION,
-    history: { ...v1.history, nodes },
-  };
 }
