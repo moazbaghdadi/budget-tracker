@@ -4,6 +4,7 @@ import { Dashboard } from './screens/Dashboard';
 import { Transactions } from './screens/Transactions';
 import { CategoriesScreen } from './screens/Categories';
 import { HistoryScreen } from './screens/History';
+import { ImportExportScreen } from './screens/ImportExport';
 import { useStore } from './lib/useStore';
 import { useT } from './i18n/LangProvider';
 
@@ -86,6 +87,9 @@ export default function App() {
           )}
           {store.screen === 'history' && (
             <HistoryScreen history={store.history} onRestore={store.restoreSnapshot} />
+          )}
+          {store.screen === 'import-export' && (
+            <ImportExportScreen data={store.data} onImport={store.importData} />
           )}
         </div>
       </main>

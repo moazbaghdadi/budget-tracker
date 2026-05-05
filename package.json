@@ -20,13 +20,15 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.1.1",
-    "@tauri-apps/plugin-fs": "^2.0.3",
     "@tauri-apps/plugin-dialog": "^2.0.1",
+    "@tauri-apps/plugin-fs": "^2.0.3",
     "@tauri-apps/plugin-opener": "^2.2.5",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
+    "@eslint/js": "^9.17.0",
     "@playwright/test": "^1.49.1",
     "@tauri-apps/cli": "^2.1.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -38,7 +40,6 @@
     "@typescript-eslint/eslint-plugin": "^8.18.2",
     "@typescript-eslint/parser": "^8.18.2",
     "@vitejs/plugin-react": "^4.3.4",
-    "@eslint/js": "^9.17.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.37.3",
@@ -54,6 +55,8 @@
   },
   "packageManager": "pnpm@10.33.0",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

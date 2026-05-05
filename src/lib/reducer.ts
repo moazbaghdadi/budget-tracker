@@ -1,4 +1,4 @@
-import type { AppData, Attachment, SnapshotDescriptor, Transaction } from '../types';
+import type { AppData, Attachment, Categories, SnapshotDescriptor, Transaction } from '../types';
 import type { MessageKey } from '../i18n/messages';
 
 type TFn = (key: MessageKey) => string;
@@ -11,7 +11,13 @@ export type Action =
   | { kind: 'addCategory'; type: CategoryType; name: string }
   | { kind: 'removeCategory'; type: CategoryType; name: string }
   | { kind: 'addAttachment'; txId: string; attachment: Attachment }
-  | { kind: 'removeAttachment'; txId: string; attachmentId: string };
+  | { kind: 'removeAttachment'; txId: string; attachmentId: string }
+  | {
+      kind: 'importData';
+      mode: 'append' | 'replace';
+      transactions: Transaction[];
+      cats: Categories;
+    };
 
 export const INIT_DATA: AppData = {
   cats: { income: [], expense: [] },
@@ -81,7 +87,36 @@ export function reduce(state: AppData, action: Action): AppData {
         ),
       };
     }
+    case 'importData': {
+      if (action.mode === 'replace') {
+        return {
+          tx: [...action.transactions],
+          cats: {
+            income: [...action.cats.income],
+            expense: [...action.cats.expense],
+          },
+        };
+      }
+      return {
+        tx: [...state.tx, ...action.transactions],
+        cats: {
+          income: unionPreserveOrder(state.cats.income, action.cats.income),
+          expense: unionPreserveOrder(state.cats.expense, action.cats.expense),
+        },
+      };
+    }
   }
+}
+
+function unionPreserveOrder(base: string[], add: string[]): string[] {
+  const seen = new Set(base);
+  const out = [...base];
+  for (const name of add) {
+    if (seen.has(name)) continue;
+    seen.add(name);
+    out.push(name);
+  }
+  return out;
 }
 
 export function actionToDescriptor(state: AppData, action: Action): SnapshotDescriptor {
@@ -122,6 +157,13 @@ export function actionToDescriptor(state: AppData, action: Action): SnapshotDesc
       const att = tx?.attachments.find((a) => a.id === action.attachmentId);
       return { kind: 'removeAttachment', filename: att?.filename ?? null };
     }
+    case 'importData': {
+      const txCount = action.transactions.length;
+      const catCount = action.cats.income.length + action.cats.expense.length;
+      return action.mode === 'replace'
+        ? { kind: 'importReplace', txCount, catCount }
+        : { kind: 'importAppend', txCount, catCount };
+    }
   }
 }
 
@@ -159,6 +201,10 @@ export function formatDescriptor(d: SnapshotDescriptor, t: TFn): string {
       return d.filename === null
         ? t('undo.removeAttachment')
         : `${t('undo.removeAttachment')} · ${d.filename}`;
+    case 'importAppend':
+      return `${t('undo.importAppend')} · ${d.txCount.toLocaleString('en-US')} ${t('tx.title')}`;
+    case 'importReplace':
+      return `${t('undo.importReplace')} · ${d.txCount.toLocaleString('en-US')} ${t('tx.title')}`;
     case 'restore':
       return `${t('history.restorePrefix')}: ${formatDescriptor(d.target, t)}`;
   }

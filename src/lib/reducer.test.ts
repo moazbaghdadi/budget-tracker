@@ -376,3 +376,133 @@ describe('INIT_DATA', () => {
     expect(INIT_DATA.cats.expense).toEqual([]);
   });
 });
+
+describe('reduce: importData', () => {
+  const seeded: AppData = {
+    cats: { income: ['Salary'], expense: ['Rent'] },
+    tx: [
+      {
+        id: 'old1',
+        date: '2026-01-01',
+        type: 'income',
+        category: 'Salary',
+        description: '',
+        amount: 100,
+        attachments: [],
+        bucket: 'bank',
+      },
+    ],
+  };
+
+  const importedTxs = [
+    {
+      id: 'new1',
+      date: '2026-04-01',
+      type: 'expense' as const,
+      category: 'Rent',
+      description: '',
+      amount: 350,
+      attachments: [],
+      bucket: 'bank' as const,
+    },
+    {
+      id: 'new2',
+      date: '2026-04-02',
+      type: 'expense' as const,
+      category: 'Groceries',
+      description: '',
+      amount: 50,
+      attachments: [],
+      bucket: 'cash' as const,
+    },
+  ];
+
+  it('replace mode wipes existing data and uses imported payload exactly', () => {
+    const next = reduce(seeded, {
+      kind: 'importData',
+      mode: 'replace',
+      transactions: importedTxs,
+      cats: { income: [], expense: ['Rent', 'Groceries'] },
+    });
+    expect(next.tx).toHaveLength(2);
+    expect(next.tx.map((t) => t.id)).toEqual(['new1', 'new2']);
+    expect(next.cats.income).toEqual([]);
+    expect(next.cats.expense).toEqual(['Rent', 'Groceries']);
+  });
+
+  it('append mode concatenates txs and unions categories without duplicates', () => {
+    const next = reduce(seeded, {
+      kind: 'importData',
+      mode: 'append',
+      transactions: importedTxs,
+      cats: { income: ['Salary', 'Bonus'], expense: ['Rent', 'Groceries'] },
+    });
+    expect(next.tx.map((t) => t.id)).toEqual(['old1', 'new1', 'new2']);
+    expect(next.cats.income).toEqual(['Salary', 'Bonus']);
+    expect(next.cats.expense).toEqual(['Rent', 'Groceries']);
+  });
+
+  it('does not mutate the input state', () => {
+    const before = JSON.stringify(seeded);
+    reduce(seeded, {
+      kind: 'importData',
+      mode: 'replace',
+      transactions: importedTxs,
+      cats: { income: [], expense: [] },
+    });
+    expect(JSON.stringify(seeded)).toBe(before);
+  });
+});
+
+describe('describeAction: importData', () => {
+  it('describes append mode with the transaction count', () => {
+    const s = describeAction(
+      blank,
+      {
+        kind: 'importData',
+        mode: 'append',
+        transactions: [
+          {
+            id: 'a',
+            date: '2026-04-01',
+            type: 'income',
+            category: 'X',
+            description: '',
+            amount: 10,
+            attachments: [],
+            bucket: 'bank',
+          },
+          {
+            id: 'b',
+            date: '2026-04-02',
+            type: 'expense',
+            category: 'Y',
+            description: '',
+            amount: 20,
+            attachments: [],
+            bucket: 'bank',
+          },
+        ],
+        cats: { income: [], expense: [] },
+      },
+      tAr,
+    );
+    expect(s).toContain(messages.ar['undo.importAppend']);
+    expect(s).toContain('2');
+  });
+
+  it('describes replace mode with the transaction count', () => {
+    const s = describeAction(
+      blank,
+      {
+        kind: 'importData',
+        mode: 'replace',
+        transactions: [],
+        cats: { income: [], expense: [] },
+      },
+      tAr,
+    );
+    expect(s).toContain(messages.ar['undo.importReplace']);
+    expect(s).toContain('0');
+  });
+});

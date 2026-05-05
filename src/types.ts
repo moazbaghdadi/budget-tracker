@@ -44,6 +44,8 @@ export type SnapshotDescriptor =
   | { kind: 'removeCategory'; type: 'income' | 'expense'; name: string }
   | { kind: 'addAttachment'; filename: string }
   | { kind: 'removeAttachment'; filename: string | null }
+  | { kind: 'importAppend'; txCount: number; catCount: number }
+  | { kind: 'importReplace'; txCount: number; catCount: number }
   | { kind: 'restore'; target: SnapshotDescriptor };
 
 export type Snapshot = {
@@ -67,6 +69,6 @@ export type DiskFormat = {
   history: History;
 };
 
-export type Screen = 'dashboard' | 'transactions' | 'categories' | 'history';
+export type Screen = 'dashboard' | 'transactions' | 'categories' | 'history' | 'import-export';
 
 export type Breakpoint = 'mobile' | 'tablet' | 'desktop';

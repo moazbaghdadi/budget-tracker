@@ -9,6 +9,8 @@
     "fs:allow-appconfig-read-recursive",
     "fs:allow-appconfig-write-recursive",
     "fs:allow-appconfig-meta-recursive",
+    "fs:read-files",
+    "fs:write-files",
     "dialog:default",
     "opener:default",
     {

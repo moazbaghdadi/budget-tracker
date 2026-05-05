@@ -160,3 +160,17 @@ export const IPaperclip = ({ s }: IconProps = {}) => (
     d={<path d="M21 11.5l-8.5 8.5a5 5 0 0 1-7-7L14 4.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 1 1-2.8-2.8l7-7" />}
   />
 );
+
+export const IImportExport = ({ s }: IconProps = {}) => (
+  <Ic
+    size={s ?? 22}
+    d={
+      <>
+        <path d="M7 3v12" />
+        <path d="M3 7l4-4 4 4" />
+        <path d="M17 21V9" />
+        <path d="M21 17l-4 4-4-4" />
+      </>
+    }
+  />
+);

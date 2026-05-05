@@ -49,6 +49,11 @@ export type Store = {
   removeCategory: (type: CategoryType, name: string) => void;
   addAttachment: (txId: string, attachment: Attachment) => void;
   removeAttachment: (txId: string, attachmentId: string) => void;
+  importData: (
+    mode: 'append' | 'replace',
+    transactions: Transaction[],
+    cats: Categories,
+  ) => void;
 
   undo: () => void;
   redo: () => void;
@@ -140,6 +145,8 @@ export function useStore(): Store {
     addAttachment: (txId, attachment) => apply({ kind: 'addAttachment', txId, attachment }),
     removeAttachment: (txId, attachmentId) =>
       apply({ kind: 'removeAttachment', txId, attachmentId }),
+    importData: (mode, transactions, cats) =>
+      apply({ kind: 'importData', mode, transactions, cats }),
     undo: () => setHistory((h) => undo(h)),
     redo: () => setHistory((h) => redo(h)),
     restoreSnapshot: (id) =>

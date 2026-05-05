@@ -11,6 +11,7 @@ const ar = {
   'nav.transactions': 'المعاملات',
   'nav.categories': 'الفئات',
   'nav.history': 'السجل',
+  'nav.importExport': 'استيراد/تصدير',
 
   'lang.label': 'اللغة',
   'lang.ar': 'العربية',
@@ -117,6 +118,8 @@ const ar = {
   'undo.removeCatExpense': 'حذف فئة مصروف',
   'undo.addAttachment': 'إضافة مرفق',
   'undo.removeAttachment': 'حذف مرفق',
+  'undo.importAppend': 'استيراد (إضافة)',
+  'undo.importReplace': 'استيراد (استبدال)',
 
   'modal.field.attachments': 'المرفقات (اختياري)',
   'modal.attachments.add': 'إرفاق ملف',
@@ -131,6 +134,33 @@ const ar = {
   'tx.attachments.title': 'مرفقات المعاملة',
   'tx.attachments.aria': 'مرفقات',
   'tx.attachments.count': '{count} مرفق',
+
+  'importExport.title': 'استيراد وتصدير',
+  'importExport.subtitle': 'احفظ بياناتك في ملف Excel أو استورد بياناتك من ملف Excel.',
+  'importExport.export.title': 'تصدير إلى Excel',
+  'importExport.export.desc': 'يحفظ كل المعاملات والفئات الحالية في ملف Excel بصفحتين.',
+  'importExport.export.btn': 'تصدير الآن',
+  'importExport.export.success': 'تم الحفظ في {path}',
+  'importExport.import.title': 'استيراد من Excel',
+  'importExport.import.desc': 'اختر ملف Excel للاطلاع على محتواه قبل الإضافة أو الاستبدال.',
+  'importExport.import.btn': 'اختيار ملف…',
+  'importExport.import.found': 'تم العثور على {tx} معاملة و {cat} فئة',
+  'importExport.import.skipped': 'تم تجاهل {n} صفًا بسبب أخطاء',
+  'importExport.import.append': 'إضافة إلى الموجود',
+  'importExport.import.replace': 'استبدال الكل',
+  'importExport.import.confirmReplace':
+    'سيؤدي ذلك إلى استبدال كل البيانات الحالية. يمكن التراجع لاحقًا من شاشة السجل. هل تريد المتابعة؟',
+  'importExport.import.cancel': 'إلغاء',
+  'importExport.import.successAppend': 'تمت إضافة {tx} معاملة و {cat} فئة جديدة',
+  'importExport.import.successReplace': 'تم استبدال البيانات: {tx} معاملة و {cat} فئة',
+  'importExport.import.skippedRow': 'الصف {row}: {reason}',
+  'importExport.import.moreSkipped': '+ {n} أخرى…',
+  'importExport.webDisabled': 'الاستيراد والتصدير متاحان في تطبيق سطح المكتب فقط',
+  'importExport.error.parse': 'تعذّرت قراءة الملف. تأكّد من أنه ملف Excel صالح.',
+  'importExport.error.noData': 'لا توجد بيانات قابلة للاستيراد في هذا الملف',
+  'importExport.error.write': 'تعذّر حفظ الملف',
+  'importExport.error.read': 'تعذّر قراءة الملف',
+  'importExport.error.missingSheet': 'الملف لا يحتوي على صفحة "{name}"',
 } as const;
 
 const de: Record<keyof typeof ar, string> = {
@@ -141,6 +171,7 @@ const de: Record<keyof typeof ar, string> = {
   'nav.transactions': 'Buchungen',
   'nav.categories': 'Kategorien',
   'nav.history': 'Verlauf',
+  'nav.importExport': 'Import/Export',
 
   'lang.label': 'Sprache',
   'lang.ar': 'العربية',
@@ -248,6 +279,8 @@ const de: Record<keyof typeof ar, string> = {
   'undo.removeCatExpense': 'Ausgabenkategorie löschen',
   'undo.addAttachment': 'Anhang hinzugefügt',
   'undo.removeAttachment': 'Anhang entfernt',
+  'undo.importAppend': 'Import (Anhängen)',
+  'undo.importReplace': 'Import (Ersetzen)',
 
   'modal.field.attachments': 'Anhänge (optional)',
   'modal.attachments.add': 'Datei anhängen',
@@ -262,6 +295,36 @@ const de: Record<keyof typeof ar, string> = {
   'tx.attachments.title': 'Anhänge',
   'tx.attachments.aria': 'Anhänge',
   'tx.attachments.count': '{count} Anhang/Anhänge',
+
+  'importExport.title': 'Import & Export',
+  'importExport.subtitle':
+    'Sichern Sie Ihre Daten als Excel-Datei oder importieren Sie Daten aus einer Excel-Datei.',
+  'importExport.export.title': 'Als Excel exportieren',
+  'importExport.export.desc':
+    'Speichert alle aktuellen Buchungen und Kategorien in einer Excel-Datei mit zwei Tabellenblättern.',
+  'importExport.export.btn': 'Jetzt exportieren',
+  'importExport.export.success': 'Gespeichert unter {path}',
+  'importExport.import.title': 'Aus Excel importieren',
+  'importExport.import.desc':
+    'Wählen Sie eine Excel-Datei und sehen Sie sich den Inhalt an, bevor Sie anhängen oder ersetzen.',
+  'importExport.import.btn': 'Datei wählen …',
+  'importExport.import.found': '{tx} Buchungen und {cat} Kategorien gefunden',
+  'importExport.import.skipped': '{n} Zeile(n) wegen Fehlern übersprungen',
+  'importExport.import.append': 'An vorhandene anhängen',
+  'importExport.import.replace': 'Alles ersetzen',
+  'importExport.import.confirmReplace':
+    'Damit werden alle aktuellen Daten ersetzt. Sie können den Vorgang später im Verlauf rückgängig machen. Fortfahren?',
+  'importExport.import.cancel': 'Abbrechen',
+  'importExport.import.successAppend': '{tx} Buchungen und {cat} neue Kategorien hinzugefügt',
+  'importExport.import.successReplace': 'Daten ersetzt: {tx} Buchungen, {cat} Kategorien',
+  'importExport.import.skippedRow': 'Zeile {row}: {reason}',
+  'importExport.import.moreSkipped': '+ {n} weitere …',
+  'importExport.webDisabled': 'Import & Export sind nur in der Desktop-App verfügbar',
+  'importExport.error.parse': 'Datei konnte nicht gelesen werden. Ist es eine gültige Excel-Datei?',
+  'importExport.error.noData': 'Diese Datei enthält keine importierbaren Daten',
+  'importExport.error.write': 'Datei konnte nicht gespeichert werden',
+  'importExport.error.read': 'Datei konnte nicht gelesen werden',
+  'importExport.error.missingSheet': 'Die Datei enthält kein Tabellenblatt „{name}"',
 };
 
 export type MessageKey = keyof typeof ar;

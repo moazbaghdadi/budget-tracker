@@ -51,6 +51,7 @@
 
 ## App Structure (desktop addition)
 4. **السجل** / **Verlauf** (History) — desktop-only screen showing the undo-tree as a flat-with-branches list; lets the user restore any past version.
+5. **استيراد/تصدير** / **Import/Export** — Tauri-only screen for exporting the current state to an `.xlsx` file and importing one back. Import shows a preview with skipped-row diagnostics, then offers append vs replace; replace gates on `window.confirm()`. The import is a single undo-tree snapshot.
 
 ## Tech Stack (desktop app)
 - **Tauri 2** wrapper, **React 18 + TypeScript + Vite** UI
@@ -83,3 +84,12 @@
 - Tauri-only feature (browser shows a disabled hint). Files are picked via `@tauri-apps/plugin-dialog`, copied by the Rust `copy_attachment` command into `$AppConfig/budget-tracker/attachments/<attachmentId>.<ext>`, and opened with the system default app via `@tauri-apps/plugin-opener`.
 - We never read attachment bytes into JS — no MIME detection, no size cap, no content inspection. The `Attachment` metadata in `data.json` only stores `{ id, filename, ext }`.
 - **No GC.** Files on disk are never deleted: removing an attachment from a transaction (or deleting the transaction) leaves the file in place because past undo-tree snapshots may still reference it. A future GC pass tied to snapshot eviction is out of scope.
+
+## Import/Export
+- Tauri-only feature (browser shows a disabled hint). Lives in `src/screens/ImportExport.tsx`; serialization in `src/lib/excel.ts` (uses the `xlsx` SheetJS library).
+- Format: `.xlsx` workbook with two sheets — `Transactions` (columns: `date`, `type`, `bucket`, `toBucket`, `category`, `description`, `amount`) and `Categories` (columns: `type`, `name`). Headers are stable English identifiers — do not localize them.
+- `id` and `attachments` are intentionally **not** round-tripped. Imported transactions get a fresh `crypto.randomUUID()` and `attachments: []`. Attachment binaries are not bundled into the Excel.
+- Import validation rejects bad rows (invalid date/type/bucket, non-positive amount, transfer with same bucket on both sides) and surfaces them as a skipped-rows panel — valid rows still go through.
+- Importer auto-backfills `cats` from any transaction category that wasn't listed in the Categories sheet, so a transactions-only Excel still produces a consistent view.
+- The whole import is a **single undo-tree snapshot** via the `importData` reducer action, so the user can undo it as one step regardless of how many rows were imported.
+- File picking uses `@tauri-apps/plugin-dialog` (`save` / `open`); reading + writing the bytes uses `@tauri-apps/plugin-fs` (`readFile` / `writeFile`). Capabilities: `fs:read-files` + `fs:write-files` are granted; the dialog plugin auto-registers the picked path in the runtime fs scope.
