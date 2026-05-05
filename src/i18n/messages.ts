@@ -171,7 +171,7 @@ const de: Record<keyof typeof ar, string> = {
   'nav.transactions': 'Buchungen',
   'nav.categories': 'Kategorien',
   'nav.history': 'Verlauf',
-  'nav.importExport': 'Import/Export',
+  'nav.importExport': 'Importieren/Exportieren',
 
   'lang.label': 'Sprache',
   'lang.ar': 'العربية',
