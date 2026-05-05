@@ -67,6 +67,7 @@
 - E2E: `pnpm e2e` (Playwright against the web build)
 - Build native installers: `pnpm tauri build`
 - Always commit per implementation step, with a clear message tied to that step
+- **After a successful `git push` to `main`, ask the user whether to also cut a release.** If yes, hand off to the `publish-release` skill (`.claude/skills/publish-release/SKILL.md`). Skip the prompt for non-feature pushes (docs-only, internal tooling, work-in-progress branches).
 
 ## Persistence layer
 - Detected at runtime via `isTauri()`:
@@ -93,3 +94,12 @@
 - Importer auto-backfills `cats` from any transaction category that wasn't listed in the Categories sheet, so a transactions-only Excel still produces a consistent view.
 - The whole import is a **single undo-tree snapshot** via the `importData` reducer action, so the user can undo it as one step regardless of how many rows were imported.
 - File picking uses `@tauri-apps/plugin-dialog` (`save` / `open`); reading + writing the bytes uses `@tauri-apps/plugin-fs` (`readFile` / `writeFile`). Capabilities: `fs:read-files` + `fs:write-files` are granted; the dialog plugin auto-registers the picked path in the runtime fs scope.
+
+## Auto-update (OTA)
+- **macOS + Windows only.** Linux targets (`.deb`/`.rpm`) aren't supported by Tauri's updater; a Linux path would require switching to AppImage and is not yet wired.
+- Built on `tauri-plugin-updater` + `tauri-plugin-process`. `src/lib/updater.ts` wraps the JS plugin; `src/components/UpdateModal.tsx` is the install UX; `src/App.tsx` fires a one-shot `check()` on mount.
+- The plugin reads a signed manifest at `https://github.com/moazbaghdadi/budget-tracker/releases/latest/download/latest.json`. GitHub's `/releases/latest/...` redirector ignores drafts, so OTA only fires once a release is **promoted from draft to published** — the existing publish-release flow already gates this.
+- The manifest is built by the `manifest` job in `.github/workflows/release.yml` (runs after the matrix `build`). It downloads `.sig` files from the just-published draft, assembles `latest.json` (only mac aarch64/x86_64 and Windows NSIS), and uploads it to the same release.
+- Signing keypair: private key + password live as GitHub secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Public key is embedded in `src-tauri/tauri.conf.json` under `plugins.updater.pubkey`. The local copy is at `~/.tauri/budget-tracker.key{,.pub,.password}` — never commit any of these.
+- **Losing the signing private key bricks all future auto-updates** (every installed client validates against the embedded public key, so rotating the key would orphan existing installs). Treat it like a code-signing cert.
+- `bundle.createUpdaterArtifacts: true` in `tauri.conf.json` is what causes `tauri-action` to produce `.sig` files alongside each installer.

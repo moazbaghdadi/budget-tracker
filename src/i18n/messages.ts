@@ -161,6 +161,15 @@ const ar = {
   'importExport.error.write': 'تعذّر حفظ الملف',
   'importExport.error.read': 'تعذّر قراءة الملف',
   'importExport.error.missingSheet': 'الملف لا يحتوي على صفحة "{name}"',
+
+  'update.available': 'تحديث متاح',
+  'update.newVersion': 'الإصدار الجديد: {version}',
+  'update.releaseNotes': 'ما الجديد',
+  'update.install': 'تثبيت الآن',
+  'update.later': 'لاحقاً',
+  'update.downloading': 'جاري التحميل… {pct}٪',
+  'update.installing': 'جاري التثبيت…',
+  'update.error': 'فشل التحديث: {msg}',
 } as const;
 
 const de: Record<keyof typeof ar, string> = {
@@ -325,6 +334,15 @@ const de: Record<keyof typeof ar, string> = {
   'importExport.error.write': 'Datei konnte nicht gespeichert werden',
   'importExport.error.read': 'Datei konnte nicht gelesen werden',
   'importExport.error.missingSheet': 'Die Datei enthält kein Tabellenblatt „{name}"',
+
+  'update.available': 'Update verfügbar',
+  'update.newVersion': 'Neue Version: {version}',
+  'update.releaseNotes': 'Was ist neu',
+  'update.install': 'Jetzt installieren',
+  'update.later': 'Später',
+  'update.downloading': 'Wird heruntergeladen … {pct} %',
+  'update.installing': 'Wird installiert …',
+  'update.error': 'Update fehlgeschlagen: {msg}',
 };
 
 export type MessageKey = keyof typeof ar;

@@ -1,16 +1,33 @@
+import { useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { UndoRedoBar } from './components/UndoRedoBar';
+import { UpdateModal } from './components/UpdateModal';
 import { Dashboard } from './screens/Dashboard';
 import { Transactions } from './screens/Transactions';
 import { CategoriesScreen } from './screens/Categories';
 import { HistoryScreen } from './screens/History';
 import { ImportExportScreen } from './screens/ImportExport';
 import { useStore } from './lib/useStore';
+import { checkForUpdate, type AvailableUpdate } from './lib/updater';
 import { useT } from './i18n/LangProvider';
 
 export default function App() {
   const store = useStore();
   const { t, tp } = useT();
+  const [pendingUpdate, setPendingUpdate] = useState<AvailableUpdate | null>(null);
+  const [updateDismissed, setUpdateDismissed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    checkForUpdate()
+      .then((u) => {
+        if (!cancelled && u) setPendingUpdate(u);
+      })
+      .catch((err) => console.warn('updater check failed', err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (!store.ready) {
     return (
@@ -93,6 +110,9 @@ export default function App() {
           )}
         </div>
       </main>
+      {pendingUpdate && !updateDismissed && (
+        <UpdateModal update={pendingUpdate} onDismiss={() => setUpdateDismissed(true)} />
+      )}
     </div>
   );
 }
