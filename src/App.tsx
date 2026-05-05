@@ -90,6 +90,7 @@ export default function App() {
               transactions={store.data.tx}
               categories={store.data.cats}
               onAdd={store.addTx}
+              onEdit={store.editTx}
               onDelete={confirmDelete}
               onAddAttachment={store.addAttachment}
               onRemoveAttachment={store.removeAttachment}

@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { Bucket, Transaction } from '../types';
-import { IDown, IPaperclip, ITrans, ITrash, IUp } from './icons';
+import { IDown, IPaperclip, IPencil, ITrans, ITrash, IUp } from './icons';
 import { useT } from '../i18n/LangProvider';
 import { attachmentsSupported } from '../lib/attachments';
 import type { MessageKey } from '../i18n/messages';
@@ -17,11 +17,12 @@ const tdS: CSSProperties = {
 type Props = {
   t: Transaction;
   onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
   onOpenAttachments?: (id: string) => void;
   tableMode?: boolean;
 };
 
-export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
+export function TxRow({ t, onDelete, onEdit, onOpenAttachments, tableMode }: Props) {
   const { t: tr, fmtMoneyAbs, fmtDate } = useT();
   const isTransfer = t.type === 'transfer';
   const inc = t.type === 'income';
@@ -39,6 +40,7 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
   const badgeColor = amountColor;
   const TypeIcon = isTransfer ? ITrans : inc ? IUp : IDown;
   const deleteAria = tr('tx.deleteAria');
+  const editAria = tr('tx.editAria');
   const attCount = t.attachments.length;
   const showPaperclip = onOpenAttachments && (attCount > 0 || attachmentsSupported());
   const paperclipAria =
@@ -67,6 +69,26 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
     >
       <IPaperclip s={16} />
       {attCount > 0 && <span>{attCount}</span>}
+    </button>
+  ) : null;
+  const editButton = onEdit ? (
+    <button
+      aria-label={editAria}
+      onClick={() => onEdit(t.id)}
+      style={{
+        background: 'var(--teal-light)',
+        border: 'none',
+        borderRadius: 8,
+        width: 34,
+        height: 34,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        color: 'var(--teal)',
+      }}
+    >
+      <IPencil s={16} />
     </button>
   ) : null;
 
@@ -108,6 +130,9 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
         </td>
         <td style={{ ...tdS, textAlign: 'center', whiteSpace: 'nowrap' }}>
           {paperclip}
+          {editButton && (
+            <span style={{ marginInlineStart: paperclip ? 6 : 0 }}>{editButton}</span>
+          )}
           {onDelete && (
             <button
               aria-label={deleteAria}
@@ -123,7 +148,7 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
                 justifyContent: 'center',
                 cursor: 'pointer',
                 color: 'var(--red)',
-                marginInlineStart: paperclip ? 6 : 0,
+                marginInlineStart: paperclip || editButton ? 6 : 0,
               }}
             >
               <ITrash s={16} />
@@ -191,6 +216,7 @@ export function TxRow({ t, onDelete, onOpenAttachments, tableMode }: Props) {
           {fmtMoneyAbs(t.amount)}
         </span>
         {paperclip}
+        {editButton}
         {onDelete && (
           <button
             aria-label={deleteAria}

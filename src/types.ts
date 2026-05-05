@@ -40,6 +40,9 @@ export type SnapshotDescriptor =
   | { kind: 'deleteExpense'; category: string; amount: number }
   | { kind: 'deleteTransfer'; from: Bucket; to: Bucket; amount: number }
   | { kind: 'deleteUnknown' }
+  | { kind: 'editIncome'; category: string; amount: number }
+  | { kind: 'editExpense'; category: string; amount: number }
+  | { kind: 'editTransfer'; from: Bucket; to: Bucket; amount: number }
   | { kind: 'addCategory'; type: 'income' | 'expense'; name: string }
   | { kind: 'removeCategory'; type: 'income' | 'expense'; name: string }
   | { kind: 'addAttachment'; filename: string }

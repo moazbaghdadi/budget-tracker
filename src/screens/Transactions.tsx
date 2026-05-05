@@ -18,6 +18,7 @@ type Props = {
   transactions: Transaction[];
   categories: Categories;
   onAdd: (tx: NewTx) => void;
+  onEdit: (id: string, tx: NewTx) => void;
   onDelete: (id: string) => void;
   onAddAttachment: (txId: string, attachment: Attachment) => void;
   onRemoveAttachment: (txId: string, attachmentId: string) => void;
@@ -27,6 +28,7 @@ export function Transactions({
   transactions,
   categories,
   onAdd,
+  onEdit,
   onDelete,
   onAddAttachment,
   onRemoveAttachment,
@@ -37,8 +39,12 @@ export function Transactions({
   const [bucketFilter, setBucketFilter] = useState<BucketFilter>('all');
   const [search, setSearch] = useState('');
   const [attachmentsTxId, setAttachmentsTxId] = useState<string | null>(null);
+  const [editingTxId, setEditingTxId] = useState<string | null>(null);
   const attachmentsTx = attachmentsTxId
     ? transactions.find((tx) => tx.id === attachmentsTxId) ?? null
+    : null;
+  const editingTx = editingTxId
+    ? transactions.find((tx) => tx.id === editingTxId) ?? null
     : null;
 
   const filtered = transactions
@@ -210,6 +216,7 @@ export function Transactions({
                   key={t.id}
                   t={t}
                   onDelete={onDelete}
+                  onEdit={setEditingTxId}
                   onOpenAttachments={setAttachmentsTxId}
                   tableMode
                 />
@@ -222,8 +229,17 @@ export function Transactions({
       {showModal && (
         <AddTxModal
           categories={categories}
-          onAdd={onAdd}
+          onSubmit={onAdd}
           onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {editingTx && (
+        <AddTxModal
+          categories={categories}
+          initialTx={editingTx}
+          onSubmit={(tx) => onEdit(editingTx.id, tx)}
+          onClose={() => setEditingTxId(null)}
         />
       )}
 

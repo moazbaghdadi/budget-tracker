@@ -44,6 +44,7 @@ export type Store = {
   setScreen: (s: Screen) => void;
 
   addTx: (tx: Omit<Transaction, 'id'>) => void;
+  editTx: (id: string, tx: Omit<Transaction, 'id'>) => void;
   deleteTx: (id: string) => void;
   addCategory: (type: CategoryType, name: string) => void;
   removeCategory: (type: CategoryType, name: string) => void;
@@ -139,6 +140,7 @@ export function useStore(): Store {
     screen,
     setScreen,
     addTx: (tx) => apply({ kind: 'addTx', tx, id: newId() }),
+    editTx: (id, tx) => apply({ kind: 'updateTx', id, tx }),
     deleteTx: (id) => apply({ kind: 'deleteTx', id }),
     addCategory: (type, name) => apply({ kind: 'addCategory', type, name }),
     removeCategory: (type, name) => apply({ kind: 'removeCategory', type, name }),

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import type { Attachment, Bucket, Categories, TxType } from '../types';
+import type { Attachment, Bucket, Categories, Transaction, TxType } from '../types';
 import { todayIso } from '../lib/format';
 import { IClose, IDown, IPlus, ITrans, IUp } from './icons';
 import { inputStyle as inputSt } from './styles';
@@ -28,8 +28,9 @@ export type NewTx = {
 
 type Props = {
   categories: Categories;
-  onAdd: (tx: NewTx) => void;
+  onSubmit: (tx: NewTx) => void;
   onClose: () => void;
+  initialTx?: Transaction;
 };
 
 const BUCKETS: ReadonlyArray<readonly [Bucket, MessageKey]> = [
@@ -41,16 +42,17 @@ function flip(b: Bucket): Bucket {
   return b === 'bank' ? 'cash' : 'bank';
 }
 
-export function AddTxModal({ categories, onAdd, onClose }: Props) {
+export function AddTxModal({ categories, onSubmit, onClose, initialTx }: Props) {
   const { t } = useT();
-  const [type, setType] = useState<TxType>('income');
-  const [bucket, setBucket] = useState<Bucket>('bank');
-  const [toBucket, setToBucket] = useState<Bucket>('cash');
-  const [cat, setCat] = useState('');
-  const [desc, setDesc] = useState('');
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(todayIso());
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const isEdit = !!initialTx;
+  const [type, setType] = useState<TxType>(initialTx?.type ?? 'income');
+  const [bucket, setBucket] = useState<Bucket>(initialTx?.bucket ?? 'bank');
+  const [toBucket, setToBucket] = useState<Bucket>(initialTx?.toBucket ?? 'cash');
+  const [cat, setCat] = useState(initialTx?.category ?? '');
+  const [desc, setDesc] = useState(initialTx?.description ?? '');
+  const [amount, setAmount] = useState(initialTx ? String(initialTx.amount) : '');
+  const [date, setDate] = useState(initialTx?.date ?? todayIso());
+  const [attachments, setAttachments] = useState<Attachment[]>(initialTx?.attachments ?? []);
   const [error, setError] = useState('');
 
   const isTransfer = type === 'transfer';
@@ -65,7 +67,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
     if (next === bucket) setBucket(flip(next));
   }
 
-  function handleAdd() {
+  function handleSubmit() {
     if (!isTransfer && !cat) return setError(t('modal.error.pickCategory'));
     const num = Number(amount);
     if (!amount || Number.isNaN(num) || num <= 0) return setError(t('modal.error.amount'));
@@ -79,7 +81,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
       bucket,
       ...(isTransfer ? { toBucket } : {}),
     };
-    onAdd(tx);
+    onSubmit(tx);
     onClose();
   }
 
@@ -129,7 +131,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
           }}
         >
           <h2 id="addtx-title" style={{ fontSize: 22, fontWeight: 700 }}>
-            {t('modal.tx.title')}
+            {t(isEdit ? 'modal.tx.editTitle' : 'modal.tx.title')}
           </h2>
           <button
             aria-label={t('modal.close')}
@@ -311,7 +313,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
         )}
 
         <button
-          onClick={handleAdd}
+          onClick={handleSubmit}
           style={{
             width: '100%',
             padding: '18px',
@@ -329,7 +331,7 @@ export function AddTxModal({ categories, onAdd, onClose }: Props) {
             gap: 8,
           }}
         >
-          <IPlus s={20} /> {t('modal.save')}
+          {isEdit ? null : <IPlus s={20} />} {t(isEdit ? 'modal.editSave' : 'modal.save')}
         </button>
       </div>
     </div>

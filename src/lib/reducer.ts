@@ -7,6 +7,7 @@ export type CategoryType = 'income' | 'expense';
 
 export type Action =
   | { kind: 'addTx'; tx: Omit<Transaction, 'id'>; id: string }
+  | { kind: 'updateTx'; id: string; tx: Omit<Transaction, 'id'> }
   | { kind: 'deleteTx'; id: string }
   | { kind: 'addCategory'; type: CategoryType; name: string }
   | { kind: 'removeCategory'; type: CategoryType; name: string }
@@ -37,6 +38,16 @@ export function reduce(state: AppData, action: Action): AppData {
       }
       const tx: Transaction = { ...action.tx, id: action.id };
       return { ...state, tx: [...state.tx, tx] };
+    }
+    case 'updateTx': {
+      if (action.tx.type === 'transfer') {
+        if (!action.tx.toBucket || action.tx.toBucket === action.tx.bucket) return state;
+      }
+      if (!state.tx.some((t) => t.id === action.id)) return state;
+      return {
+        ...state,
+        tx: state.tx.map((t) => (t.id === action.id ? { ...action.tx, id: action.id } : t)),
+      };
     }
     case 'deleteTx': {
       return { ...state, tx: state.tx.filter((t) => t.id !== action.id) };
@@ -135,6 +146,20 @@ export function actionToDescriptor(state: AppData, action: Action): SnapshotDesc
       }
       return { kind: 'addExpense', category: action.tx.category, amount: action.tx.amount };
     }
+    case 'updateTx': {
+      if (action.tx.type === 'transfer' && action.tx.toBucket) {
+        return {
+          kind: 'editTransfer',
+          from: action.tx.bucket,
+          to: action.tx.toBucket,
+          amount: action.tx.amount,
+        };
+      }
+      if (action.tx.type === 'income') {
+        return { kind: 'editIncome', category: action.tx.category, amount: action.tx.amount };
+      }
+      return { kind: 'editExpense', category: action.tx.category, amount: action.tx.amount };
+    }
     case 'deleteTx': {
       const tx = state.tx.find((x) => x.id === action.id);
       if (!tx) return { kind: 'deleteUnknown' };
@@ -191,6 +216,12 @@ export function formatDescriptor(d: SnapshotDescriptor, t: TFn): string {
       return `${t('undo.deleteTransfer')} · ${bucketLabel(d.from, t)} → ${bucketLabel(d.to, t)} · ${d.amount.toLocaleString('en-US')}`;
     case 'deleteUnknown':
       return t('undo.deleteTx');
+    case 'editIncome':
+      return `${t('undo.editIncome')} · ${d.category} · ${d.amount.toLocaleString('en-US')}`;
+    case 'editExpense':
+      return `${t('undo.editExpense')} · ${d.category} · ${d.amount.toLocaleString('en-US')}`;
+    case 'editTransfer':
+      return `${t('undo.editTransfer')} · ${bucketLabel(d.from, t)} → ${bucketLabel(d.to, t)} · ${d.amount.toLocaleString('en-US')}`;
     case 'addCategory':
       return `${t(d.type === 'income' ? 'undo.addCatIncome' : 'undo.addCatExpense')} · ${d.name}`;
     case 'removeCategory':

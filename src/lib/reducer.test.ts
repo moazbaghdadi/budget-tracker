@@ -143,6 +143,131 @@ describe('reduce: deleteTx', () => {
   });
 });
 
+describe('reduce: updateTx', () => {
+  const seeded: AppData = {
+    cats: { income: [], expense: [] },
+    tx: [
+      {
+        id: '1',
+        date: '2026-04-01',
+        type: 'expense',
+        category: 'Old',
+        description: 'old desc',
+        amount: 10,
+        attachments: [{ id: 'a1', filename: 'old.pdf', ext: 'pdf' }],
+        bucket: 'bank',
+      },
+      {
+        id: '2',
+        date: '2026-04-02',
+        type: 'income',
+        category: 'Donations',
+        description: '',
+        amount: 100,
+        attachments: [],
+        bucket: 'cash',
+      },
+    ],
+  };
+
+  it('replaces the matching tx wholesale and preserves the id', () => {
+    const next = reduce(seeded, {
+      kind: 'updateTx',
+      id: '1',
+      tx: {
+        date: '2026-05-09',
+        type: 'expense',
+        category: 'New',
+        description: 'new desc',
+        amount: 42,
+        attachments: [],
+        bucket: 'cash',
+      },
+    });
+    expect(next.tx).toHaveLength(2);
+    const updated = next.tx.find((t) => t.id === '1')!;
+    expect(updated.id).toBe('1');
+    expect(updated.category).toBe('New');
+    expect(updated.description).toBe('new desc');
+    expect(updated.amount).toBe(42);
+    expect(updated.bucket).toBe('cash');
+    expect(updated.date).toBe('2026-05-09');
+    expect(updated.attachments).toEqual([]);
+    const untouched = next.tx.find((t) => t.id === '2')!;
+    expect(untouched.category).toBe('Donations');
+  });
+
+  it('returns the same state reference when id is missing', () => {
+    const next = reduce(seeded, {
+      kind: 'updateTx',
+      id: 'missing',
+      tx: {
+        date: '2026-05-09',
+        type: 'expense',
+        category: 'X',
+        description: '',
+        amount: 1,
+        attachments: [],
+        bucket: 'bank',
+      },
+    });
+    expect(next).toBe(seeded);
+  });
+
+  it('returns the same state reference for a transfer with no toBucket', () => {
+    const next = reduce(seeded, {
+      kind: 'updateTx',
+      id: '1',
+      tx: {
+        date: '2026-05-09',
+        type: 'transfer',
+        category: '',
+        description: '',
+        amount: 1,
+        attachments: [],
+        bucket: 'bank',
+      },
+    });
+    expect(next).toBe(seeded);
+  });
+
+  it('returns the same state reference when transfer toBucket equals bucket', () => {
+    const next = reduce(seeded, {
+      kind: 'updateTx',
+      id: '1',
+      tx: {
+        date: '2026-05-09',
+        type: 'transfer',
+        category: '',
+        description: '',
+        amount: 1,
+        attachments: [],
+        bucket: 'cash',
+        toBucket: 'cash',
+      },
+    });
+    expect(next).toBe(seeded);
+  });
+
+  it('does not mutate the input state', () => {
+    const before = JSON.stringify(seeded);
+    reduce(seeded, {
+      kind: 'updateTx',
+      id: '1',
+      tx: {
+        date: '2026-05-09',
+        type: 'expense',
+        category: 'New',
+        description: '',
+        amount: 5,
+        attachments: [],
+        bucket: 'bank',
+      },
+    });
+    expect(JSON.stringify(seeded)).toBe(before);
+  });
+});
+
 describe('reduce: addCategory', () => {
   it('appends a trimmed name', () => {
     const next = reduce(blank, { kind: 'addCategory', type: 'income', name: '  مرتبات  ' });
@@ -366,6 +491,54 @@ describe('describeAction', () => {
     const s = describeAction(blank, { kind: 'removeCategory', type: 'expense', name: 'Y' }, tAr);
     expect(s).toContain(messages.ar['undo.removeCatExpense']);
     expect(s).toContain('Y');
+  });
+
+  it('describes updateTx for income with post-edit category and amount', () => {
+    const s = describeAction(
+      blank,
+      {
+        kind: 'updateTx',
+        id: '1',
+        tx: {
+          date: '2026-05-09',
+          type: 'income',
+          category: 'التبرعات',
+          description: '',
+          amount: 750,
+          attachments: [],
+          bucket: 'bank',
+        },
+      },
+      tAr,
+    );
+    expect(s).toContain(messages.ar['undo.editIncome']);
+    expect(s).toContain('التبرعات');
+    expect(s).toContain('750');
+  });
+
+  it('describes updateTx for transfer with both bucket labels and the arrow', () => {
+    const s = describeAction(
+      blank,
+      {
+        kind: 'updateTx',
+        id: '1',
+        tx: {
+          date: '2026-05-09',
+          type: 'transfer',
+          category: '',
+          description: '',
+          amount: 25,
+          attachments: [],
+          bucket: 'bank',
+          toBucket: 'cash',
+        },
+      },
+      tAr,
+    );
+    expect(s).toContain(messages.ar['undo.editTransfer']);
+    expect(s).toContain(messages.ar['bucket.bank']);
+    expect(s).toContain(messages.ar['bucket.cash']);
+    expect(s).toContain('→');
   });
 });
 
