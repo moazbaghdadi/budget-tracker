@@ -55,9 +55,14 @@ export function Transactions({
         t.bucket === bucketFilter ||
         t.toBucket === bucketFilter,
     )
-    .filter(
-      (t) => !search || t.description?.includes(search) || t.category.includes(search),
-    )
+    .filter((t) => {
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (
+        !!t.description?.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q)
+      );
+    })
     .sort((a, b) => b.date.localeCompare(a.date));
 
   return (
@@ -229,6 +234,7 @@ export function Transactions({
       {showModal && (
         <AddTxModal
           categories={categories}
+          transactions={transactions}
           onSubmit={onAdd}
           onClose={() => setShowModal(false)}
         />
@@ -237,6 +243,7 @@ export function Transactions({
       {editingTx && (
         <AddTxModal
           categories={categories}
+          transactions={transactions}
           initialTx={editingTx}
           onSubmit={(tx) => onEdit(editingTx.id, tx)}
           onClose={() => setEditingTxId(null)}

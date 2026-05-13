@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { Attachment, Bucket, Categories, Transaction, TxType } from '../types';
 import { todayIso } from '../lib/format';
 import { IClose, IDown, IPlus, ITrans, IUp } from './icons';
@@ -31,6 +31,7 @@ type Props = {
   onSubmit: (tx: NewTx) => void;
   onClose: () => void;
   initialTx?: Transaction;
+  transactions?: Transaction[];
 };
 
 const BUCKETS: ReadonlyArray<readonly [Bucket, MessageKey]> = [
@@ -42,7 +43,13 @@ function flip(b: Bucket): Bucket {
   return b === 'bank' ? 'cash' : 'bank';
 }
 
-export function AddTxModal({ categories, onSubmit, onClose, initialTx }: Props) {
+export function AddTxModal({
+  categories,
+  onSubmit,
+  onClose,
+  initialTx,
+  transactions,
+}: Props) {
   const { t } = useT();
   const isEdit = !!initialTx;
   const [type, setType] = useState<TxType>(initialTx?.type ?? 'income');
@@ -54,6 +61,33 @@ export function AddTxModal({ categories, onSubmit, onClose, initialTx }: Props) 
   const [date, setDate] = useState(initialTx?.date ?? todayIso());
   const [attachments, setAttachments] = useState<Attachment[]>(initialTx?.attachments ?? []);
   const [error, setError] = useState('');
+  const [descFocused, setDescFocused] = useState(false);
+
+  const pastDescriptions = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    const sorted = [...(transactions ?? [])].sort((a, b) => b.date.localeCompare(a.date));
+    for (const tx of sorted) {
+      const d = tx.description?.trim();
+      if (!d) continue;
+      const key = d.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(d);
+    }
+    return out;
+  }, [transactions]);
+
+  const suggestions = useMemo(() => {
+    const q = desc.trim().toLowerCase();
+    if (!q) return [];
+    return pastDescriptions
+      .filter((d) => {
+        const dl = d.toLowerCase();
+        return dl.includes(q) && dl !== q;
+      })
+      .slice(0, 5);
+  }, [desc, pastDescriptions]);
 
   const isTransfer = type === 'transfer';
   const cats = type === 'income' ? categories.income : type === 'expense' ? categories.expense : [];
@@ -257,13 +291,79 @@ export function AddTxModal({ categories, onSubmit, onClose, initialTx }: Props) 
         )}
 
         <FLabel>{t('modal.field.description')}</FLabel>
-        <input
-          aria-label={t('modal.field.descriptionShort')}
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          placeholder={t('modal.field.descPlaceholder')}
-          style={inputSt}
-        />
+        <div style={{ position: 'relative', marginBottom: 20 }}>
+          <input
+            aria-label={t('modal.field.descriptionShort')}
+            aria-autocomplete="list"
+            aria-expanded={descFocused && suggestions.length > 0}
+            role="combobox"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            onFocus={() => setDescFocused(true)}
+            onBlur={() => setDescFocused(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' && descFocused && suggestions.length > 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                setDescFocused(false);
+              }
+            }}
+            placeholder={t('modal.field.descPlaceholder')}
+            style={{ ...inputSt, marginBottom: 0 }}
+          />
+          {descFocused && suggestions.length > 0 && (
+            <ul
+              role="listbox"
+              aria-label={t('modal.field.descSuggestions')}
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 4px)',
+                insetInlineStart: 0,
+                insetInlineEnd: 0,
+                background: '#fff',
+                border: '1.5px solid var(--border)',
+                borderRadius: 12,
+                boxShadow: '0 8px 24px oklch(0% 0 0 / 0.12)',
+                zIndex: 10,
+                margin: 0,
+                padding: 4,
+                listStyle: 'none',
+                maxHeight: 240,
+                overflowY: 'auto',
+              }}
+            >
+              {suggestions.map((s) => (
+                <li key={s}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setDesc(s);
+                      setDescFocused(false);
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--teal-light)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: 8,
+                      border: 'none',
+                      background: 'transparent',
+                      textAlign: 'start',
+                      fontSize: 15,
+                      color: 'var(--text)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {s}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         <FLabel>{t('modal.field.amount')}</FLabel>
         <input
