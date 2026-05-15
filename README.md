@@ -83,11 +83,13 @@ Both should be green before opening a PR.
 
 A single JSON file is written atomically to:
 
-| OS      | Path                                                       |
-|---------|------------------------------------------------------------|
-| Linux   | `~/.config/muhaseb-tech/data.json`                       |
-| macOS   | `~/Library/Application Support/muhaseb-tech/data.json`   |
-| Windows | `%APPDATA%\muhaseb-tech\data.json`                       |
+| OS      | Path                                                                                       |
+|---------|--------------------------------------------------------------------------------------------|
+| Linux   | `~/.config/com.codetiquette.muhasebtech/muhaseb-tech/data.json`                            |
+| macOS   | `~/Library/Application Support/com.codetiquette.muhasebtech/muhaseb-tech/data.json`        |
+| Windows | `%APPDATA%\com.codetiquette.muhasebtech\muhaseb-tech\data.json`                            |
+
+(The outer `com.codetiquette.muhasebtech` directory is Tauri's per-bundle-identifier app-data root; the inner `muhaseb-tech` is `APP_DIR` in `src/lib/persist.ts`.)
 
 The file contains the entire undo-tree, so undo, redo, and "restore version" survive across restarts.
 

@@ -75,7 +75,7 @@
 
 ## Persistence layer
 - Detected at runtime via `isTauri()`:
-  - In Tauri window → `@tauri-apps/plugin-fs` writes atomically to `$AppConfig/muhaseb-tech/data.json`
+  - In Tauri window → `@tauri-apps/plugin-fs` writes atomically to `$AppConfig/muhaseb-tech/data.json`. `$AppConfig` is Tauri's `BaseDirectory.AppConfig`, which **already includes the bundle identifier** as a path segment — so the full on-disk path is e.g. `%APPDATA%\com.codetiquette.muhasebtech\muhaseb-tech\data.json` on Windows, `~/Library/Application Support/com.codetiquette.muhasebtech/muhaseb-tech/data.json` on macOS, `~/.config/com.codetiquette.muhasebtech/muhaseb-tech/data.json` on Linux.
   - In browser → `localStorage` key `muhaseb-tech:data`
 - Disk format (v4): `{ schemaVersion: 4, history, deviceId, serverState? }`.
   - `deviceId` is a per-install UUID generated on first load (or during v3 → v4 migration). It also stamps every new `Snapshot.deviceId` so the sync layer can attribute authorship.
