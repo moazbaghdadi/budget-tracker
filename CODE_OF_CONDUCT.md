@@ -4,7 +4,7 @@ This project adopts the [Contributor Covenant, version 2.1](https://www.contribu
 
 ## Reporting
 
-To report behavior that violates the Code of Conduct, email **moazbaghdadi@gmail.com**. Reports will be reviewed promptly and the privacy of the reporter will be respected.
+To report behavior that violates the Code of Conduct, email **moaz.baghdadi@codetiquette.com**. Reports will be reviewed promptly and the privacy of the reporter will be respected.
 
 ## Enforcement
 
