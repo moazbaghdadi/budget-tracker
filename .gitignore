@@ -11,7 +11,10 @@ dist-ssr/
 # Tauri / Rust
 src-tauri/target/
 src-tauri/Cargo.lock
-src-tauri/gen/
+# Auto-regenerated permission schemas; safe to drop.
+src-tauri/gen/schemas/
+# The mobile Gradle/Android scaffolding lives in src-tauri/gen/android/ and IS
+# committed. The inner .gitignore in that tree handles build outputs.
 
 # Testing
 coverage/

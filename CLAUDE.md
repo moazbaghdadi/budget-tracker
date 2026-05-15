@@ -156,3 +156,32 @@ All mobile-hidden features stay fully functional on desktop. Gating is implement
 - `isTauri()` (currently `'__TAURI_INTERNALS__' in window`) is `true` on mobile too, so the Tauri persistence path runs. Good — but anywhere that conflates "Tauri" with "desktop" needs auditing in Phase 5.
 - Fonts (IBM Plex Sans + Plex Sans Arabic) load from Google Fonts via `index.html`. The CSP already allows `fonts.googleapis.com` / `fonts.gstatic.com`. On mobile cold-start with no network, fonts fall back to system; acceptable.
 - `oklch()` colors require Chrome WebView ≥ 111 (Android) and WKWebView ≥ 15.4 (iOS). Both are above the floors picked above.
+
+## Mobile development (Android)
+
+Scaffolded by `pnpm tauri android init` (Mobile Phase 1). The generated Gradle project lives in `src-tauri/gen/android/`.
+
+### One-time machine setup
+- Android SDK at `$ANDROID_HOME` (default `~/Android/Sdk`); `cmdline-tools` installed at `$ANDROID_HOME/cmdline-tools/latest/`.
+- NDK r29 (or later) under `$ANDROID_HOME/ndk/`; set `NDK_HOME` to the chosen version dir.
+- Rust mobile targets: `rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android`.
+- An Android Virtual Device. Existing AVD: `Pixel_7`. Boot from CLI: `$ANDROID_HOME/emulator/emulator -avd Pixel_7`.
+- JDK 21 works with Tauri 2.10+; older docs said JDK 17 — disregard.
+
+Persistent shell config (`~/.zshrc`):
+```sh
+export ANDROID_HOME="$HOME/Android/Sdk"
+export NDK_HOME="$ANDROID_HOME/ndk/29.0.14206865"
+export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator"
+```
+
+### Workflow
+- `pnpm android:dev` — launches the app in a running AVD (boot the emulator first; `adb devices` should list it).
+- `pnpm android:build` — produces signed AAB + APK release artifacts under `src-tauri/gen/android/app/build/outputs/`.
+
+### Android specifics
+- `applicationId` is `com.codetiquette.budgettracker` (CodeTiquette developer account on Play Store). The desktop identifier `com.moazbaghdadi.budget-tracker` in `tauri.conf.json` stays unchanged.
+- `minSdk = 26` (Android 8.0); see § Mobile targets above for the rationale.
+- `tauri-plugin-updater` is desktop-only: the Cargo dep is target-gated (`cfg(not(android|ios))`) and the init call in `src-tauri/src/lib.rs` is `#[cfg(desktop)]`-gated. Mobile updates flow through Play Store.
+- On-device data path: `/data/user/0/com.codetiquette.budgettracker/files/budget-tracker/data.json` (sandboxed, not user-browsable; inspect via `adb shell run-as com.codetiquette.budgettracker ls files/budget-tracker/`).
+- Generated Gradle/Android files in `src-tauri/gen/android/` are committed; the inner `.gitignore` keeps build outputs out.
