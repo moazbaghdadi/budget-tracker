@@ -4,6 +4,7 @@ import App from './App';
 import { LangProvider } from './i18n/LangProvider';
 import { LANG_STORAGE_KEY } from './i18n/LangProvider';
 import { DEFAULT_LANG, LANGS } from './i18n/messages';
+import { ConfirmProvider } from './components/ConfirmDialog';
 import './index.css';
 
 // Apply the saved language to <html> before React paints so there's no RTL/LTR flash.
@@ -26,7 +27,9 @@ if (!container) throw new Error('#root not found');
 createRoot(container).render(
   <StrictMode>
     <LangProvider>
-      <App />
+      <ConfirmProvider>
+        <App />
+      </ConfirmProvider>
     </LangProvider>
   </StrictMode>,
 );

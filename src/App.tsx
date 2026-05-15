@@ -10,6 +10,7 @@ import { ImportExportScreen } from './screens/ImportExport';
 import { SettingsScreen } from './screens/Settings';
 import { useStore } from './lib/useStore';
 import { useBreakpoint } from './lib/useBreakpoint';
+import { useConfirm } from './components/ConfirmDialog';
 import { checkForUpdate, type AvailableUpdate } from './lib/updater';
 import { useT } from './i18n/LangProvider';
 
@@ -18,6 +19,7 @@ export default function App() {
   const { t, tp } = useT();
   const bp = useBreakpoint();
   const isMobile = bp === 'mobile';
+  const confirm = useConfirm();
   const [pendingUpdate, setPendingUpdate] = useState<AvailableUpdate | null>(null);
   const [updateDismissed, setUpdateDismissed] = useState(false);
 
@@ -50,13 +52,13 @@ export default function App() {
     );
   }
 
-  function confirmDelete(id: string) {
-    if (!window.confirm(t('confirm.deleteTx'))) return;
+  async function confirmDelete(id: string) {
+    if (!(await confirm(t('confirm.deleteTx')))) return;
     store.deleteTx(id);
   }
 
-  function confirmRemoveCategory(type: 'income' | 'expense', name: string) {
-    if (!window.confirm(tp('confirm.deleteCat', { name }))) return;
+  async function confirmRemoveCategory(type: 'income' | 'expense', name: string) {
+    if (!(await confirm(tp('confirm.deleteCat', { name })))) return;
     store.removeCategory(type, name);
   }
 

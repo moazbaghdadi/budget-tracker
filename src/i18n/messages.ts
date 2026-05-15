@@ -25,6 +25,8 @@ const ar = {
 
   'confirm.deleteTx': 'هل تريد حذف هذه المعاملة؟',
   'confirm.deleteCat': 'هل تريد حذف الفئة "{name}"؟',
+  'confirm.confirm': 'تأكيد',
+  'confirm.cancel': 'إلغاء',
 
   'dashboard.balance': 'الرصيد الإجمالي',
   'dashboard.bankBalance': 'رصيد البنك',
@@ -207,6 +209,8 @@ const de: Record<keyof typeof ar, string> = {
 
   'confirm.deleteTx': 'Diese Buchung wirklich löschen?',
   'confirm.deleteCat': 'Kategorie „{name}" wirklich löschen?',
+  'confirm.confirm': 'Bestätigen',
+  'confirm.cancel': 'Abbrechen',
 
   'dashboard.balance': 'Gesamtsaldo',
   'dashboard.bankBalance': 'Bankkonto-Saldo',
@@ -393,6 +397,8 @@ const en: Record<keyof typeof ar, string> = {
 
   'confirm.deleteTx': 'Delete this transaction?',
   'confirm.deleteCat': 'Delete the category "{name}"?',
+  'confirm.confirm': 'Confirm',
+  'confirm.cancel': 'Cancel',
 
   'dashboard.balance': 'Total balance',
   'dashboard.bankBalance': 'Bank balance',

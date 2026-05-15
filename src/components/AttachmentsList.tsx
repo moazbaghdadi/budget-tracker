@@ -3,6 +3,7 @@ import type { Attachment } from '../types';
 import { useT } from '../i18n/LangProvider';
 import { attachmentsSupported, openAttachment, pickAttachment } from '../lib/attachments';
 import { IPaperclip, IPlus, ITrash } from './icons';
+import { useConfirm } from './ConfirmDialog';
 
 type Props = {
   attachments: Attachment[];
@@ -14,6 +15,7 @@ export function AttachmentsList({ attachments, onAdd, onRemove }: Props) {
   const { t } = useT();
   const supported = attachmentsSupported();
   const [busy, setBusy] = useState(false);
+  const confirm = useConfirm();
 
   async function handlePick() {
     if (!supported || busy) return;
@@ -38,8 +40,8 @@ export function AttachmentsList({ attachments, onAdd, onRemove }: Props) {
     }
   }
 
-  function handleRemove(a: Attachment) {
-    if (!window.confirm(t('modal.attachments.confirmRemove'))) return;
+  async function handleRemove(a: Attachment) {
+    if (!(await confirm(t('modal.attachments.confirmRemove')))) return;
     onRemove(a.id);
   }
 

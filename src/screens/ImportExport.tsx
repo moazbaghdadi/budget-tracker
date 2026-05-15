@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { AppData, Categories, Transaction } from '../types';
 import { Card } from '../components/Card';
 import { PageHeader } from '../components/PageHeader';
+import { useConfirm } from '../components/ConfirmDialog';
 import { IDown, IUp } from '../components/icons';
 import { useT } from '../i18n/LangProvider';
 import { isTauri } from '../lib/persist';
@@ -28,6 +29,7 @@ const SKIP_PREVIEW = 5;
 
 export function ImportExportScreen({ data, onImport }: Props) {
   const { t, tp } = useT();
+  const confirm = useConfirm();
   const supported = isTauri();
 
   const [exportStatus, setExportStatus] = useState<Status>({ kind: 'idle' });
@@ -109,9 +111,9 @@ export function ImportExportScreen({ data, onImport }: Props) {
     setPreview(null);
   }
 
-  function handleReplace() {
+  async function handleReplace() {
     if (!preview) return;
-    if (!window.confirm(t('importExport.import.confirmReplace'))) return;
+    if (!(await confirm(t('importExport.import.confirmReplace')))) return;
     onImport('replace', preview.transactions, preview.cats);
     setImportStatus({
       kind: 'ok',
