@@ -72,6 +72,12 @@ export type DiskFormat = {
   history: History;
 };
 
-export type Screen = 'dashboard' | 'transactions' | 'categories' | 'history' | 'import-export';
+export type Screen =
+  | 'dashboard'
+  | 'transactions'
+  | 'categories'
+  | 'history'
+  | 'import-export'
+  | 'settings';
 
 export type Breakpoint = 'mobile' | 'tablet' | 'desktop';

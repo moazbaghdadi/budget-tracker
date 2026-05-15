@@ -7,6 +7,7 @@ import { Transactions } from './screens/Transactions';
 import { CategoriesScreen } from './screens/Categories';
 import { HistoryScreen } from './screens/History';
 import { ImportExportScreen } from './screens/ImportExport';
+import { SettingsScreen } from './screens/Settings';
 import { useStore } from './lib/useStore';
 import { checkForUpdate, type AvailableUpdate } from './lib/updater';
 import { useT } from './i18n/LangProvider';
@@ -109,6 +110,7 @@ export default function App() {
           {store.screen === 'import-export' && (
             <ImportExportScreen data={store.data} onImport={store.importData} />
           )}
+          {store.screen === 'settings' && <SettingsScreen />}
         </div>
       </main>
       {pendingUpdate && !updateDismissed && (

@@ -12,6 +12,11 @@ const ar = {
   'nav.categories': 'الفئات',
   'nav.history': 'السجل',
   'nav.importExport': 'استيراد/تصدير',
+  'nav.settings': 'الإعدادات',
+
+  'settings.title': 'الإعدادات',
+  'settings.subtitle': 'التفضيلات والإعدادات العامة',
+  'settings.section.language': 'اللغة',
 
   'lang.label': 'اللغة',
   'lang.ar': 'العربية',
@@ -189,6 +194,11 @@ const de: Record<keyof typeof ar, string> = {
   'nav.categories': 'Kategorien',
   'nav.history': 'Verlauf',
   'nav.importExport': 'Importieren/Exportieren',
+  'nav.settings': 'Einstellungen',
+
+  'settings.title': 'Einstellungen',
+  'settings.subtitle': 'Präferenzen und allgemeine Einstellungen',
+  'settings.section.language': 'Sprache',
 
   'lang.label': 'Sprache',
   'lang.ar': 'العربية',
@@ -370,6 +380,11 @@ const en: Record<keyof typeof ar, string> = {
   'nav.categories': 'Categories',
   'nav.history': 'History',
   'nav.importExport': 'Import/Export',
+  'nav.settings': 'Settings',
+
+  'settings.title': 'Settings',
+  'settings.subtitle': 'Preferences and general settings',
+  'settings.section.language': 'Language',
 
   'lang.label': 'Language',
   'lang.ar': 'العربية',

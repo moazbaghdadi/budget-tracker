@@ -1,7 +1,6 @@
 import type { Screen } from '../types';
 import { NAV_ITEMS } from './nav-items';
 import { useT } from '../i18n/LangProvider';
-import { LANGS, type Lang, type MessageKey } from '../i18n/messages';
 
 type Props = {
   screen: Screen;
@@ -9,7 +8,7 @@ type Props = {
 };
 
 export function Sidebar({ screen, setScreen }: Props) {
-  const { t, lang, setLang } = useT();
+  const { t } = useT();
 
   return (
     <aside
@@ -112,58 +111,6 @@ export function Sidebar({ screen, setScreen }: Props) {
           );
         })}
       </nav>
-
-      <div
-        style={{
-          padding: '16px 14px 0',
-          borderTop: '1px solid oklch(100% 0 0 / 0.1)',
-          marginInline: 10,
-          marginTop: 12,
-        }}
-      >
-        <p
-          style={{
-            color: 'oklch(100% 0 0 / 0.55)',
-            fontSize: 12,
-            fontWeight: 600,
-            marginBottom: 8,
-            paddingInlineStart: 4,
-          }}
-        >
-          {t('lang.label')}
-        </p>
-        <div
-          role="group"
-          aria-label={t('lang.label')}
-          style={{ display: 'flex', gap: 6 }}
-        >
-          {LANGS.map((l: Lang) => {
-            const active = lang === l;
-            return (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                aria-pressed={active}
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  padding: '8px 10px',
-                  borderRadius: 10,
-                  border: '1.5px solid',
-                  borderColor: active ? '#fff' : 'oklch(100% 0 0 / 0.2)',
-                  background: active ? 'oklch(100% 0 0 / 0.18)' : 'transparent',
-                  color: active ? '#fff' : 'oklch(100% 0 0 / 0.65)',
-                  fontSize: 14,
-                  fontWeight: active ? 700 : 500,
-                  cursor: 'pointer',
-                }}
-              >
-                {t(`lang.${l}` as MessageKey)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </aside>
   );
 }
