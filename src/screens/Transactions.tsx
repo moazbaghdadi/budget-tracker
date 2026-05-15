@@ -9,6 +9,7 @@ import { AttachmentsModal } from '../components/AttachmentsModal';
 import { IPlus, ISearch } from '../components/icons';
 import { inputStyle } from '../components/styles';
 import { useT } from '../i18n/LangProvider';
+import { useBreakpoint } from '../lib/useBreakpoint';
 import type { MessageKey } from '../i18n/messages';
 
 type Filter = 'all' | 'income' | 'expense' | 'transfer';
@@ -34,6 +35,8 @@ export function Transactions({
   onRemoveAttachment,
 }: Props) {
   const { t } = useT();
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [bucketFilter, setBucketFilter] = useState<BucketFilter>('all');
@@ -184,6 +187,18 @@ export function Transactions({
 
       {filtered.length === 0 ? (
         <EmptyState msg={t('tx.empty')} />
+      ) : isMobile ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {filtered.map((t) => (
+            <TxRow
+              key={t.id}
+              t={t}
+              onDelete={onDelete}
+              onEdit={setEditingTxId}
+              onOpenAttachments={setAttachmentsTxId}
+            />
+          ))}
+        </div>
       ) : (
         <Card style={{ padding: 0, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>

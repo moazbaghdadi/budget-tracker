@@ -5,6 +5,7 @@ import { PageHeader } from '../components/PageHeader';
 import { IDown, IPlus, ITrash, IUp } from '../components/icons';
 import { inputStyle } from '../components/styles';
 import { useT } from '../i18n/LangProvider';
+import { useBreakpoint } from '../lib/useBreakpoint';
 
 type CatType = 'income' | 'expense';
 
@@ -16,13 +17,21 @@ type Props = {
 
 export function CategoriesScreen({ categories, onAdd, onRemove }: Props) {
   const { t } = useT();
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
   const [newI, setNewI] = useState('');
   const [newE, setNewE] = useState('');
 
   return (
     <div>
       <PageHeader title={t('cats.title')} subtitle={t('cats.subtitle')} />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: isMobile ? 14 : 20,
+        }}
+      >
         <CatSection
           title={t('cats.income')}
           color="var(--green)"
