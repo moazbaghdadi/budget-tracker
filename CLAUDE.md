@@ -89,8 +89,10 @@
   children re-parented up so the chain stays connected
 
 ## Attachments
-- Tauri-only feature (browser shows a disabled hint). Files are picked via `@tauri-apps/plugin-dialog`, copied by the Rust `copy_attachment` command into `$AppConfig/budget-tracker/attachments/<attachmentId>.<ext>`, and opened with the system default app via `@tauri-apps/plugin-opener`.
+- **Tauri desktop only.** Disabled on mobile and in the browser; both render a disabled hint. Mobile is blocked by `@tauri-apps/plugin-dialog` returning content URIs instead of filesystem paths (so the Rust `std::fs::copy` in `copy_attachment` can't consume them) plus `@tauri-apps/plugin-opener` only supporting URLs on mobile. Path A (custom JNI bridge to `ContentResolver` + a FileProvider declaration in `AndroidManifest.xml`) is the v2 unblocker.
+- On desktop: files are picked via `@tauri-apps/plugin-dialog`, copied by the Rust `copy_attachment` command into `$AppConfig/budget-tracker/attachments/<attachmentId>.<ext>`, and opened with the system default app via `@tauri-apps/plugin-opener`.
 - We never read attachment bytes into JS — no MIME detection, no size cap, no content inspection. The `Attachment` metadata in `data.json` only stores `{ id, filename, ext }`.
+- The gate lives in `src/components/AttachmentsList.tsx` (`supported = attachmentsSupported() && bp !== 'mobile'`). Picker UI handles the falsy branch with a disabled hint.
 - **No GC.** Files on disk are never deleted: removing an attachment from a transaction (or deleting the transaction) leaves the file in place because past undo-tree snapshots may still reference it. A future GC pass tied to snapshot eviction is out of scope.
 
 ## Import/Export

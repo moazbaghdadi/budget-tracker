@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Attachment } from '../types';
 import { useT } from '../i18n/LangProvider';
 import { attachmentsSupported, openAttachment, pickAttachment } from '../lib/attachments';
+import { useBreakpoint } from '../lib/useBreakpoint';
 import { IPaperclip, IPlus, ITrash } from './icons';
 import { useConfirm } from './ConfirmDialog';
 
@@ -13,7 +14,13 @@ type Props = {
 
 export function AttachmentsList({ attachments, onAdd, onRemove }: Props) {
   const { t } = useT();
-  const supported = attachmentsSupported();
+  const bp = useBreakpoint();
+  // Attachments gated off on mobile for v1. The desktop pipeline relies on
+  // dialog.open returning a filesystem path that Rust std::fs::copy can
+  // consume; on Android dialog.open returns a content URI, and plugin-opener
+  // can't open local files there. Path A (custom JNI + FileProvider) is the
+  // v2 unblocker — see docs/sync-architecture.md / mobile-port plan Phase 4.
+  const supported = attachmentsSupported() && bp !== 'mobile';
   const [busy, setBusy] = useState(false);
   const confirm = useConfirm();
 
