@@ -152,7 +152,7 @@ Mobile port plan lives at `~/.claude/plans/mobile-port.md`. Phase-0 decisions re
 | Attachments | ✅ | ❌ hide | `dialog.open` → URI mismatch with the Rust `std::fs::copy` command, plus `opener` can't open local files on mobile. Full support would need custom JNI + FileProvider |
 | OTA auto-updater | ✅ | ❌ disable | `plugin-updater` is desktop-only; Play Store handles updates |
 
-All mobile-hidden features stay fully functional on desktop. Gating is implemented in Phase 5 via an `isMobile()` helper; the Cargo dependency on `tauri-plugin-updater` will be conditionally compiled with `#[cfg(desktop)]` to keep it out of mobile builds.
+All mobile-hidden features stay fully functional on desktop. The gating lives in `src/components/nav-items.ts` (`MOBILE_HIDDEN_SCREENS`) and `src/App.tsx` (route guard + `checkForUpdate` skip on mobile). `tauri-plugin-updater` is also Cargo-target-gated to desktop only and its plugin init in `src-tauri/src/lib.rs` is `#[cfg(desktop)]`-wrapped.
 
 ### Known mobile-specific risks (carried into later phases)
 - `isTauri()` (currently `'__TAURI_INTERNALS__' in window`) is `true` on mobile too, so the Tauri persistence path runs. Good — but anywhere that conflates "Tauri" with "desktop" needs auditing in Phase 5.

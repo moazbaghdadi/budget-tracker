@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Sidebar } from './components/Sidebar';
+import { MOBILE_HIDDEN_SCREENS } from './components/nav-items';
 import { UndoRedoBar } from './components/UndoRedoBar';
 import { UpdateModal } from './components/UpdateModal';
 import { Dashboard } from './screens/Dashboard';
@@ -24,6 +25,9 @@ export default function App() {
   const [updateDismissed, setUpdateDismissed] = useState(false);
 
   useEffect(() => {
+    // Updater plugin is desktop-only (Cargo target-gated + cfg(desktop) on
+    // init); skip the check entirely on mobile to avoid the runtime warning.
+    if (isMobile) return;
     let cancelled = false;
     checkForUpdate()
       .then((u) => {
@@ -33,7 +37,18 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isMobile]);
+
+  // If the user is on a mobile-hidden screen (e.g. resized down from desktop
+  // while on History), bounce to Dashboard so they don't see a dead state.
+  useEffect(() => {
+    if (isMobile && MOBILE_HIDDEN_SCREENS.includes(store.screen)) {
+      store.setScreen('dashboard');
+    }
+  }, [isMobile, store.screen, store]);
+
+  const effectiveScreen =
+    isMobile && MOBILE_HIDDEN_SCREENS.includes(store.screen) ? 'dashboard' : store.screen;
 
   if (!store.ready) {
     return (
@@ -98,10 +113,10 @@ export default function App() {
               : '32px 36px',
           }}
         >
-          {store.screen === 'dashboard' && (
+          {effectiveScreen === 'dashboard' && (
             <Dashboard transactions={store.data.tx} setScreen={store.setScreen} />
           )}
-          {store.screen === 'transactions' && (
+          {effectiveScreen === 'transactions' && (
             <Transactions
               transactions={store.data.tx}
               categories={store.data.cats}
@@ -112,20 +127,20 @@ export default function App() {
               onRemoveAttachment={store.removeAttachment}
             />
           )}
-          {store.screen === 'categories' && (
+          {effectiveScreen === 'categories' && (
             <CategoriesScreen
               categories={store.data.cats}
               onAdd={store.addCategory}
               onRemove={confirmRemoveCategory}
             />
           )}
-          {store.screen === 'history' && (
+          {effectiveScreen === 'history' && (
             <HistoryScreen history={store.history} onRestore={store.restoreSnapshot} />
           )}
-          {store.screen === 'import-export' && (
+          {effectiveScreen === 'import-export' && (
             <ImportExportScreen data={store.data} onImport={store.importData} />
           )}
-          {store.screen === 'settings' && <SettingsScreen />}
+          {effectiveScreen === 'settings' && <SettingsScreen />}
         </div>
       </main>
       {pendingUpdate && !updateDismissed && (

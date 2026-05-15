@@ -1,5 +1,5 @@
 import type { Screen } from '../types';
-import { NAV_ITEMS } from './nav-items';
+import { MOBILE_HIDDEN_SCREENS, NAV_ITEMS } from './nav-items';
 import { useT } from '../i18n/LangProvider';
 import { useBreakpoint } from '../lib/useBreakpoint';
 
@@ -124,6 +124,7 @@ function SideColumn({ screen, setScreen }: Props) {
 
 function BottomNav({ screen, setScreen }: Props) {
   const { t } = useT();
+  const visible = NAV_ITEMS.filter((i) => !MOBILE_HIDDEN_SCREENS.includes(i.id));
   return (
     <nav
       aria-label={t('app.name')}
@@ -139,7 +140,7 @@ function BottomNav({ screen, setScreen }: Props) {
         boxShadow: '0 -4px 16px oklch(0% 0 0 / 0.18)',
       }}
     >
-      {NAV_ITEMS.map(({ id, labelKey, Icon }) => {
+      {visible.map(({ id, labelKey, Icon }) => {
         const active = screen === id;
         const label = t(labelKey);
         return (
