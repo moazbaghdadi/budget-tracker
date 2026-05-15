@@ -135,7 +135,7 @@ function BottomNav({ screen, setScreen }: Props) {
         background: 'var(--teal-dark)',
         display: 'flex',
         zIndex: 50,
-        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 6px)',
         boxShadow: '0 -4px 16px oklch(0% 0 0 / 0.18)',
       }}
     >

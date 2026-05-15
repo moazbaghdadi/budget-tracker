@@ -73,7 +73,9 @@ export default function App() {
             zIndex: 10,
             background: 'var(--bg)',
             borderBottom: '1px solid var(--border)',
-            padding: isMobile ? '8px 14px' : '12px 36px',
+            padding: isMobile
+              ? 'calc(16px + env(safe-area-inset-top)) 14px 10px 14px'
+              : '12px 36px',
             display: 'flex',
             justifyContent: 'flex-end',
           }}
