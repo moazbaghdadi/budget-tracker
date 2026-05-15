@@ -8,6 +8,7 @@ import { StatCard } from '../components/StatCard';
 import { TxRow } from '../components/TxRow';
 import { IDown, IUp } from '../components/icons';
 import { useT } from '../i18n/LangProvider';
+import { useBreakpoint } from '../lib/useBreakpoint';
 
 type Props = {
   transactions: Transaction[];
@@ -15,6 +16,8 @@ type Props = {
 };
 
 export function Dashboard({ transactions, setScreen }: Props) {
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
   const { t, fmtMoney, fmtMoneyAbs, fmtMonth } = useT();
   const now = new Date();
   const cm = now.getMonth();
@@ -54,8 +57,8 @@ export function Dashboard({ transactions, setScreen }: Props) {
           background: 'var(--teal)',
           color: '#fff',
           borderRadius: 20,
-          padding: '32px 32px',
-          marginBottom: 28,
+          padding: isMobile ? '22px 20px' : '32px 32px',
+          marginBottom: isMobile ? 18 : 28,
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -95,7 +98,15 @@ export function Dashboard({ transactions, setScreen }: Props) {
         >
           <div>
             <p style={{ fontSize: 14, opacity: 0.8, marginBottom: 8 }}>{t('dashboard.balance')}</p>
-            <p style={{ fontSize: 52, fontWeight: 700, letterSpacing: -1 }}>{fmtMoney(total)}</p>
+            <p
+              style={{
+                fontSize: isMobile ? 38 : 52,
+                fontWeight: 700,
+                letterSpacing: -1,
+              }}
+            >
+              {fmtMoney(total)}
+            </p>
             <div
               style={{
                 display: 'flex',
@@ -153,9 +164,9 @@ export function Dashboard({ transactions, setScreen }: Props) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 14,
-          marginBottom: 24,
+          gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+          gap: isMobile ? 10 : 14,
+          marginBottom: isMobile ? 18 : 24,
         }}
       >
         <StatCard
@@ -188,7 +199,13 @@ export function Dashboard({ transactions, setScreen }: Props) {
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 340px',
+          gap: isMobile ? 14 : 20,
+        }}
+      >
         <Card>
           <SectionTitle
             action={
