@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-export const STORAGE_KEY = 'budget-tracker:data';
+export const STORAGE_KEY = 'muhaseb-tech:data';
 
 /**
  * Apply test-only globals (e.g. auto-confirm dialogs) BEFORE the page loads.

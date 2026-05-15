@@ -43,7 +43,7 @@ export function ImportExportScreen({ data, onImport }: Props) {
       const { writeFile } = await import('@tauri-apps/plugin-fs');
       const today = new Date().toISOString().slice(0, 10);
       const path = await save({
-        defaultPath: `budget-tracker-${today}.xlsx`,
+        defaultPath: `muhaseb-tech-${today}.xlsx`,
         filters: [{ name: 'Excel', extensions: ['xlsx'] }],
       });
       if (!path) {

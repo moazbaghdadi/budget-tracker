@@ -4,7 +4,7 @@ import { isTauri } from './persist';
 /**
  * Tauri-only attachment helpers.
  *
- * Files live at `$AppConfig/budget-tracker/attachments/<id>.<ext>`. We never
+ * Files live at `$AppConfig/muhaseb-tech/attachments/<id>.<ext>`. We never
  * read the bytes into JS — `pickAttachment` invokes a Rust command that
  * streams the copy, and `openAttachment` hands the absolute path to the
  * system default app via the opener plugin.
@@ -14,7 +14,7 @@ import { isTauri } from './persist';
  * out of the 200-cap) is out of scope for now.
  */
 
-const ATTACH_SUBDIR = 'budget-tracker/attachments';
+const ATTACH_SUBDIR = 'muhaseb-tech/attachments';
 
 export function attachmentsSupported(): boolean {
   return isTauri();

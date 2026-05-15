@@ -12,5 +12,5 @@ fn main() {
         }
     }
 
-    budget_tracker_lib::run()
+    muhaseb_tech_lib::run()
 }

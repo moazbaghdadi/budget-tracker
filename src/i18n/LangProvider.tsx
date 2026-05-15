@@ -17,7 +17,7 @@ import {
   type MessageKey,
 } from './messages';
 
-export const LANG_STORAGE_KEY = 'budget-tracker:lang';
+export const LANG_STORAGE_KEY = 'muhaseb-tech:lang';
 
 type TContext = {
   lang: Lang;

@@ -10,7 +10,7 @@ async fn copy_attachment(
         .path()
         .app_config_dir()
         .map_err(|e| e.to_string())?
-        .join("budget-tracker")
+        .join("muhaseb-tech")
         .join("attachments");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     std::fs::copy(&source, dir.join(&dest_name)).map_err(|e| e.to_string())?;

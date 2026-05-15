@@ -5,7 +5,7 @@ export const DEFAULT_LANG: Lang = 'en';
 
 const ar = {
   'app.loading': 'جاري تحميل البيانات…',
-  'app.name': 'متتبع الميزانية',
+  'app.name': 'محاسب تك',
 
   'nav.dashboard': 'لوحة التحكم',
   'nav.transactions': 'المعاملات',
@@ -189,7 +189,7 @@ const ar = {
 
 const de: Record<keyof typeof ar, string> = {
   'app.loading': 'Daten werden geladen …',
-  'app.name': 'Budget-Tracker',
+  'app.name': 'Muhaseb Tech',
 
   'nav.dashboard': 'Übersicht',
   'nav.transactions': 'Buchungen',
@@ -377,7 +377,7 @@ const de: Record<keyof typeof ar, string> = {
 
 const en: Record<keyof typeof ar, string> = {
   'app.loading': 'Loading data…',
-  'app.name': 'Budget Tracker',
+  'app.name': 'Muhaseb Tech',
 
   'nav.dashboard': 'Dashboard',
   'nav.transactions': 'Transactions',

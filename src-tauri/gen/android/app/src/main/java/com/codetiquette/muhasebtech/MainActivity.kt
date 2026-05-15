@@ -1,4 +1,4 @@
-package com.codetiquette.budgettracker
+package com.codetiquette.muhasebtech
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge

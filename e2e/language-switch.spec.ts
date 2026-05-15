@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { applyTestGlobals, clearAppData } from './_helpers';
 
-const LANG_KEY = 'budget-tracker:lang';
+const LANG_KEY = 'muhaseb-tech:lang';
 
 test.beforeEach(async ({ page }) => {
   await applyTestGlobals(page);

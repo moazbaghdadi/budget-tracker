@@ -1,9 +1,9 @@
 {
-  "name": "budget-tracker",
+  "name": "muhaseb-tech",
   "private": true,
   "version": "0.6.0",
   "type": "module",
-  "description": "Cross-platform desktop budget tracker (متتبع الميزانية) with on-disk persistence and undo-tree versioning.",
+  "description": "Cross-platform desktop budget tracker (محاسب تك) with on-disk persistence and undo-tree versioning.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

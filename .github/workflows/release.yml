@@ -78,7 +78,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Budget Tracker v__VERSION__'
+          releaseName: 'Muhaseb Tech v__VERSION__'
           releaseBody: |
             Download the installer for your platform from the assets below.
 
@@ -108,9 +108,9 @@ jobs:
 
           REPO_BASE="https://github.com/${REPO}/releases/download/${TAG}"
 
-          MAC_ARM_BUNDLE="Budget.Tracker_aarch64.app.tar.gz"
-          MAC_X64_BUNDLE="Budget.Tracker_x64.app.tar.gz"
-          WIN_BUNDLE="Budget.Tracker_${VERSION}_x64-setup.exe"
+          MAC_ARM_BUNDLE="Muhaseb.Tech_aarch64.app.tar.gz"
+          MAC_X64_BUNDLE="Muhaseb.Tech_x64.app.tar.gz"
+          WIN_BUNDLE="Muhaseb.Tech_${VERSION}_x64-setup.exe"
 
           gh release download "$TAG" --repo "$REPO" \
             --pattern "${MAC_ARM_BUNDLE}.sig" \
@@ -122,7 +122,7 @@ jobs:
           WIN_SIG=$(cat "${WIN_BUNDLE}.sig")
 
           PUB_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          NOTES="Budget Tracker ${TAG}"
+          NOTES="Muhaseb Tech ${TAG}"
 
           jq -n \
             --arg version "$VERSION" \

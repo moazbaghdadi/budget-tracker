@@ -6,8 +6,8 @@ const SCHEMA_VERSION = 4 as const;
 
 export const FILE = 'data.json';
 export const TMP_FILE = 'data.json.tmp';
-export const APP_DIR = 'budget-tracker';
-export const WEB_KEY = 'budget-tracker:data';
+export const APP_DIR = 'muhaseb-tech';
+export const WEB_KEY = 'muhaseb-tech:data';
 
 declare global {
   interface Window {

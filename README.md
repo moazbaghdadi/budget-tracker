@@ -1,4 +1,4 @@
-# متتبع الميزانية — Budget Tracker
+# محاسب تك — Muhaseb Tech
 
 Cross-platform desktop budget tracker for small companies. Built with Tauri 2 + React + TypeScript.
 
@@ -85,9 +85,9 @@ A single JSON file is written atomically to:
 
 | OS      | Path                                                       |
 |---------|------------------------------------------------------------|
-| Linux   | `~/.config/budget-tracker/data.json`                       |
-| macOS   | `~/Library/Application Support/budget-tracker/data.json`   |
-| Windows | `%APPDATA%\budget-tracker\data.json`                       |
+| Linux   | `~/.config/muhaseb-tech/data.json`                       |
+| macOS   | `~/Library/Application Support/muhaseb-tech/data.json`   |
+| Windows | `%APPDATA%\muhaseb-tech\data.json`                       |
 
 The file contains the entire undo-tree, so undo, redo, and "restore version" survive across restarts.
 

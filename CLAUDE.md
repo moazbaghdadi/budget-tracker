@@ -1,8 +1,8 @@
-# Project: متتبع الميزانية — Design Preferences
+# Project: محاسب تك (Muhaseb Tech) — Design Preferences
 
 ## Language & Locale
 - **Trilingual: English (LTR, default), Arabic (RTL), German (LTR)** — runtime-switchable via the sidebar footer (button order: EN, AR, DE — same order as `LANGS` in `src/i18n/messages.ts`)
-- Default on first launch: **English**. No browser detection — every fresh install starts in English; the user can switch from the sidebar. Choice persisted in `localStorage['budget-tracker:lang']`
+- Default on first launch: **English**. No browser detection — every fresh install starts in English; the user can switch from the sidebar. Choice persisted in `localStorage['muhaseb-tech:lang']`
 - All UI strings live in the typed dictionary at `src/i18n/messages.ts`. Access them via `useT()` from `src/i18n/LangProvider.tsx` — never hard-code text in JSX. The Arabic dictionary defines the `MessageKey` master; German and English are typed as `Record<keyof typeof ar, string>` so missing keys break the build
 - Seed data (default categories, sample transactions in `src/lib/reducer.ts`) intentionally stays Arabic; English/German users rename the defaults as needed
 - Use Arabic terminology consistent with the Excel file (التبرعات، رسوم العضوية، الإيجار والمرافق، etc.)
@@ -75,8 +75,8 @@
 
 ## Persistence layer
 - Detected at runtime via `isTauri()`:
-  - In Tauri window → `@tauri-apps/plugin-fs` writes atomically to `$AppConfig/budget-tracker/data.json`
-  - In browser → `localStorage` key `budget-tracker:data`
+  - In Tauri window → `@tauri-apps/plugin-fs` writes atomically to `$AppConfig/muhaseb-tech/data.json`
+  - In browser → `localStorage` key `muhaseb-tech:data`
 - Disk format (v4): `{ schemaVersion: 4, history, deviceId, serverState? }`.
   - `deviceId` is a per-install UUID generated on first load (or during v3 → v4 migration). It also stamps every new `Snapshot.deviceId` so the sync layer can attribute authorship.
   - `serverState` (optional) holds sync bookkeeping when the user enables sync from Settings. Absent on disk = local-only mode. See `docs/sync-architecture.md` for the full sync design.
@@ -90,7 +90,7 @@
 
 ## Attachments
 - **Tauri desktop only.** Disabled on mobile and in the browser; both render a disabled hint. Mobile is blocked by `@tauri-apps/plugin-dialog` returning content URIs instead of filesystem paths (so the Rust `std::fs::copy` in `copy_attachment` can't consume them) plus `@tauri-apps/plugin-opener` only supporting URLs on mobile. Path A (custom JNI bridge to `ContentResolver` + a FileProvider declaration in `AndroidManifest.xml`) is the v2 unblocker.
-- On desktop: files are picked via `@tauri-apps/plugin-dialog`, copied by the Rust `copy_attachment` command into `$AppConfig/budget-tracker/attachments/<attachmentId>.<ext>`, and opened with the system default app via `@tauri-apps/plugin-opener`.
+- On desktop: files are picked via `@tauri-apps/plugin-dialog`, copied by the Rust `copy_attachment` command into `$AppConfig/muhaseb-tech/attachments/<attachmentId>.<ext>`, and opened with the system default app via `@tauri-apps/plugin-opener`.
 - We never read attachment bytes into JS — no MIME detection, no size cap, no content inspection. The `Attachment` metadata in `data.json` only stores `{ id, filename, ext }`.
 - The gate lives in `src/components/AttachmentsList.tsx` (`supported = attachmentsSupported() && bp !== 'mobile'`). Picker UI handles the falsy branch with a disabled hint.
 - **No GC.** Files on disk are never deleted: removing an attachment from a transaction (or deleting the transaction) leaves the file in place because past undo-tree snapshots may still reference it. A future GC pass tied to snapshot eviction is out of scope.
@@ -107,7 +107,7 @@
 ## Auto-update (OTA)
 - **macOS + Windows only.** Linux targets (`.deb`/`.rpm`) aren't supported by Tauri's updater; a Linux path would require switching to AppImage and is not yet wired.
 - Built on `tauri-plugin-updater` + `tauri-plugin-process`. `src/lib/updater.ts` wraps the JS plugin; `src/components/UpdateModal.tsx` is the install UX; `src/App.tsx` fires a one-shot `check()` on mount.
-- The plugin reads a signed manifest at `https://github.com/moazbaghdadi/budget-tracker/releases/latest/download/latest.json`. GitHub's `/releases/latest/...` redirector ignores drafts, so OTA only fires once a release is **promoted from draft to published** — the existing publish-release flow already gates this.
+- The plugin reads a signed manifest at `https://github.com/moazbaghdadi/muhaseb-tech/releases/latest/download/latest.json`. GitHub's `/releases/latest/...` redirector ignores drafts, so OTA only fires once a release is **promoted from draft to published** — the existing publish-release flow already gates this.
 - The manifest is built by the `manifest` job in `.github/workflows/release.yml` (runs after the matrix `build`). It downloads `.sig` files from the just-published draft, assembles `latest.json` (only mac aarch64/x86_64 and Windows NSIS), and uploads it to the same release.
 - Signing keypair: private key + password live as GitHub secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Public key is embedded in `src-tauri/tauri.conf.json` under `plugins.updater.pubkey`. The local copy is at `~/.tauri/budget-tracker.key{,.pub,.password}` — never commit any of these.
 - **Losing the signing private key bricks all future auto-updates** (every installed client validates against the embedded public key, so rotating the key would orphan existing installs). Treat it like a code-signing cert.
@@ -125,11 +125,10 @@ Mobile port plan lives at `~/.claude/plans/mobile-port.md`. Phase-0 decisions re
 - **Android: API 26** (Android 8.0, 2017). Tauri's default minimum is API 24 (7.0); API 26 buys an updatable WebView via Play Store with negligible user-base loss.
 - **iOS (when iOS lands): 15.4** — required for `oklch()` colors in WKWebView. (Earlier versions would force a palette rewrite.)
 
-### Android applicationId
-- Android `applicationId`: **`com.codetiquette.budgettracker`** — publishing under the CodeTiquette developer account on Play Store.
-- Desktop identifier (`com.moazbaghdadi.budget-tracker`) stays unchanged in `tauri.conf.json`. Changing it would orphan existing macOS/Linux/Windows installs (the OS treats a new identifier as a different app).
-- The two diverging is deliberate. Override the Android `applicationId` per-platform in the Gradle config that `tauri android init` scaffolds; do not touch the top-level `identifier` in `tauri.conf.json`.
-- Note: Play Console does **not** require apps in the same developer account to share a reverse-DNS prefix. It only enforces global uniqueness across the store + valid Java package syntax (which the desktop identifier fails because of the hyphen).
+### Bundle identifier
+- Unified identifier across desktop and Android: **`com.codetiquette.muhasebtech`** — single CodeTiquette developer account on both Play Store and (eventually) Apple. The desktop `identifier` in `tauri.conf.json` and the Android `applicationId` / `namespace` (Gradle + `tauri.android.conf.json`) all carry the same value.
+- The identifier collapses `muhaseb-tech` to `muhasebtech` (no hyphen) because Java package syntax — enforced by Play Console — does not permit hyphens. Desktop tolerates hyphens, but matching the Android-legal form keeps the two platforms in sync.
+- The per-platform override mechanism via `tauri.android.conf.json` is kept in place even though the values currently match; it leaves room to diverge again later without restructuring the config.
 
 ### Plugin support matrix (verified May 2026 against v2.tauri.app)
 | Plugin | Desktop | Android | iOS | Notes for our usage |
@@ -182,8 +181,8 @@ export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/late
 - `pnpm android:build` — produces signed AAB + APK release artifacts under `src-tauri/gen/android/app/build/outputs/`.
 
 ### Android specifics
-- `applicationId` is `com.codetiquette.budgettracker` (CodeTiquette developer account on Play Store). The desktop identifier `com.moazbaghdadi.budget-tracker` in `tauri.conf.json` stays unchanged.
+- `applicationId` is `com.codetiquette.muhasebtech` (unified with the desktop identifier; CodeTiquette developer account on Play Store).
 - `minSdk = 26` (Android 8.0); see § Mobile targets above for the rationale.
 - `tauri-plugin-updater` is desktop-only: the Cargo dep is target-gated (`cfg(not(android|ios))`) and the init call in `src-tauri/src/lib.rs` is `#[cfg(desktop)]`-gated. Mobile updates flow through Play Store.
-- On-device data path: `/data/user/0/com.codetiquette.budgettracker/budget-tracker/data.json` — under the app's data root, **not** under `files/` (verified on Android via Tauri's `BaseDirectory.AppConfig`). Inspect via `adb shell run-as com.codetiquette.budgettracker ls budget-tracker/`.
+- On-device data path: `/data/user/0/com.codetiquette.muhasebtech/muhaseb-tech/data.json` — under the app's data root, **not** under `files/` (verified on Android via Tauri's `BaseDirectory.AppConfig`). Inspect via `adb shell run-as com.codetiquette.muhasebtech ls muhaseb-tech/`.
 - Generated Gradle/Android files in `src-tauri/gen/android/` are committed; the inner `.gitignore` keeps build outputs out.
