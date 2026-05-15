@@ -9,12 +9,15 @@ import { HistoryScreen } from './screens/History';
 import { ImportExportScreen } from './screens/ImportExport';
 import { SettingsScreen } from './screens/Settings';
 import { useStore } from './lib/useStore';
+import { useBreakpoint } from './lib/useBreakpoint';
 import { checkForUpdate, type AvailableUpdate } from './lib/updater';
 import { useT } from './i18n/LangProvider';
 
 export default function App() {
   const store = useStore();
   const { t, tp } = useT();
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
   const [pendingUpdate, setPendingUpdate] = useState<AvailableUpdate | null>(null);
   const [updateDismissed, setUpdateDismissed] = useState(false);
 
@@ -68,7 +71,7 @@ export default function App() {
             zIndex: 10,
             background: 'var(--bg)',
             borderBottom: '1px solid var(--border)',
-            padding: '12px 36px',
+            padding: isMobile ? '8px 14px' : '12px 36px',
             display: 'flex',
             justifyContent: 'flex-end',
           }}
@@ -82,7 +85,15 @@ export default function App() {
             onRedo={store.redo}
           />
         </div>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 36px' }}>
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: '0 auto',
+            padding: isMobile
+              ? '18px 14px calc(72px + env(safe-area-inset-bottom)) 14px'
+              : '32px 36px',
+          }}
+        >
           {store.screen === 'dashboard' && (
             <Dashboard transactions={store.data.tx} setScreen={store.setScreen} />
           )}

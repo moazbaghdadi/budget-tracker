@@ -1,6 +1,7 @@
 import type { Screen } from '../types';
 import { NAV_ITEMS } from './nav-items';
 import { useT } from '../i18n/LangProvider';
+import { useBreakpoint } from '../lib/useBreakpoint';
 
 type Props = {
   screen: Screen;
@@ -8,6 +9,12 @@ type Props = {
 };
 
 export function Sidebar({ screen, setScreen }: Props) {
+  const bp = useBreakpoint();
+  if (bp === 'mobile') return <BottomNav screen={screen} setScreen={setScreen} />;
+  return <SideColumn screen={screen} setScreen={setScreen} />;
+}
+
+function SideColumn({ screen, setScreen }: Props) {
   const { t } = useT();
 
   return (
@@ -112,5 +119,83 @@ export function Sidebar({ screen, setScreen }: Props) {
         })}
       </nav>
     </aside>
+  );
+}
+
+function BottomNav({ screen, setScreen }: Props) {
+  const { t } = useT();
+  return (
+    <nav
+      aria-label={t('app.name')}
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        insetInlineStart: 0,
+        insetInlineEnd: 0,
+        background: 'var(--teal-dark)',
+        display: 'flex',
+        zIndex: 50,
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        boxShadow: '0 -4px 16px oklch(0% 0 0 / 0.18)',
+      }}
+    >
+      {NAV_ITEMS.map(({ id, labelKey, Icon }) => {
+        const active = screen === id;
+        const label = t(labelKey);
+        return (
+          <button
+            key={id}
+            onClick={() => setScreen(id)}
+            aria-label={label}
+            aria-current={active ? 'page' : undefined}
+            style={{
+              flex: 1,
+              minWidth: 0,
+              minHeight: 56,
+              padding: '10px 4px',
+              border: 'none',
+              background: 'transparent',
+              color: active ? '#fff' : 'oklch(100% 0 0 / 0.55)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 4,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: 11,
+              fontWeight: active ? 700 : 500,
+              position: 'relative',
+            }}
+          >
+            {active && (
+              <span
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  insetInlineStart: '20%',
+                  insetInlineEnd: '20%',
+                  height: 3,
+                  borderRadius: '0 0 4px 4px',
+                  background: '#fff',
+                }}
+              />
+            )}
+            <Icon s={22} />
+            <span
+              style={{
+                maxWidth: '100%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {label}
+            </span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }
