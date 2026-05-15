@@ -109,7 +109,7 @@ export default function App() {
             maxWidth: 1100,
             margin: '0 auto',
             padding: isMobile
-              ? 'calc(18px + env(safe-area-inset-top)) 14px calc(72px + env(safe-area-inset-bottom)) 14px'
+              ? 'max(56px, calc(env(safe-area-inset-top) + 36px)) 14px calc(72px + env(safe-area-inset-bottom)) 14px'
               : '32px 36px',
           }}
         >
