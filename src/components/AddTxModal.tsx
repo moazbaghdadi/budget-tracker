@@ -4,6 +4,7 @@ import { todayIso } from '../lib/format';
 import { IClose, IDown, IPlus, ITrans, IUp } from './icons';
 import { inputStyle as inputSt } from './styles';
 import { useT } from '../i18n/LangProvider';
+import { useBreakpoint } from '../lib/useBreakpoint';
 import { AttachmentsList } from './AttachmentsList';
 import type { MessageKey } from '../i18n/messages';
 
@@ -51,6 +52,8 @@ export function AddTxModal({
   transactions,
 }: Props) {
   const { t } = useT();
+  const bp = useBreakpoint();
+  const isMobile = bp === 'mobile';
   const isEdit = !!initialTx;
   const [type, setType] = useState<TxType>(initialTx?.type ?? 'income');
   const [bucket, setBucket] = useState<Bucket>(initialTx?.bucket ?? 'bank');
@@ -139,7 +142,7 @@ export function AddTxModal({
         zIndex: 200,
         background: 'oklch(0% 0 0 / 0.45)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: isMobile ? 'flex-end' : 'center',
         justifyContent: 'center',
       }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -147,11 +150,13 @@ export function AddTxModal({
       <div
         style={{
           background: '#fff',
-          borderRadius: 20,
+          borderRadius: isMobile ? '20px 20px 0 0' : 20,
           width: '100%',
-          maxWidth: 520,
-          padding: '28px 24px 32px',
-          maxHeight: '90vh',
+          maxWidth: isMobile ? '100%' : 520,
+          padding: isMobile
+            ? '20px 18px calc(20px + env(safe-area-inset-bottom)) 18px'
+            : '28px 24px 32px',
+          maxHeight: isMobile ? '92vh' : '90vh',
           overflowY: 'auto',
           boxShadow: '0 24px 80px oklch(0% 0 0 / 0.2)',
         }}
@@ -174,8 +179,8 @@ export function AddTxModal({
               background: 'var(--border)',
               border: 'none',
               borderRadius: 10,
-              width: 40,
-              height: 40,
+              width: 44,
+              height: 44,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -371,6 +376,7 @@ export function AddTxModal({
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           type="number"
+          inputMode="decimal"
           min={0}
           placeholder="0.00"
           style={{
