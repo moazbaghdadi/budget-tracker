@@ -28,7 +28,7 @@ import {
   type Action,
   type CategoryType,
 } from './reducer';
-import { emptyDisk, load, save } from './persist';
+import { emptyDisk, load, makeDeviceId, save } from './persist';
 import { useT } from '../i18n/LangProvider';
 
 const newId = () =>
@@ -71,12 +71,17 @@ export function useStore(): Store {
     createHistory(INIT_DATA, { labels: { root: t('history.rootLabel') } }),
   );
   const [ready, setReady] = useState(false);
+  const [deviceId, setDeviceId] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen>('dashboard');
   const lastSavedRef = useRef<string | null>(null);
   const tRef = useRef(t);
+  const deviceIdRef = useRef<string | null>(null);
   useEffect(() => {
     tRef.current = t;
   }, [t]);
+  useEffect(() => {
+    deviceIdRef.current = deviceId;
+  }, [deviceId]);
 
   // Load from disk once on mount.
   useEffect(() => {
@@ -86,7 +91,10 @@ export function useStore(): Store {
       if (cancelled) return;
       if (loaded) {
         setHistory(loaded.history);
+        setDeviceId(loaded.deviceId);
         lastSavedRef.current = JSON.stringify(loaded);
+      } else {
+        setDeviceId(makeDeviceId());
       }
       setReady(true);
     })();
@@ -97,16 +105,16 @@ export function useStore(): Store {
 
   // Debounced auto-save whenever the history changes.
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !deviceId) return;
     const handle = window.setTimeout(() => {
-      const disk = emptyDisk(history);
+      const disk = emptyDisk(history, deviceId);
       const serialized = JSON.stringify(disk);
       if (serialized === lastSavedRef.current) return;
       lastSavedRef.current = serialized;
       void save(disk);
     }, 300);
     return () => window.clearTimeout(handle);
-  }, [history, ready]);
+  }, [history, ready, deviceId]);
 
   const apply = useCallback((action: Action) => {
     setHistory((h) => {
@@ -115,7 +123,13 @@ export function useStore(): Store {
       if (next === data) return h;
       const descriptor = actionToDescriptor(data, action);
       const label = formatDescriptor(descriptor, tRef.current);
-      return commit(h, next, label, undefined, descriptor);
+      return commit(
+        h,
+        next,
+        label,
+        { deviceId: deviceIdRef.current ?? undefined },
+        descriptor,
+      );
     });
   }, []);
 

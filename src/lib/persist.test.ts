@@ -68,10 +68,30 @@ describe('load', () => {
     expect(await load()).toBeNull();
   });
 
-  it('returns null on a pre-v3 payload — no migration is provided, so old data is discarded', async () => {
+  it('returns null on a pre-v3 payload — no migrator from v2 (or earlier)', async () => {
     const v2 = { schemaVersion: 2, history: { rootId: 'r', currentId: 'r', nodes: {} } };
     fsState.files.set(FULL_PATH, JSON.stringify(v2));
     expect(await load()).toBeNull();
+  });
+
+  it('migrates v3 → v4 by generating a deviceId', async () => {
+    const v3 = { schemaVersion: 3, history: { rootId: 'r', currentId: 'r', nodes: {} } };
+    fsState.files.set(FULL_PATH, JSON.stringify(v3));
+    const loaded = await load();
+    expect(loaded).not.toBeNull();
+    expect(loaded?.schemaVersion).toBe(4);
+    expect(loaded?.history).toEqual(v3.history);
+    expect(typeof loaded?.deviceId).toBe('string');
+    expect(loaded?.deviceId).not.toHaveLength(0);
+  });
+
+  it('backfills a missing deviceId on a v4 file', async () => {
+    const incomplete = { schemaVersion: 4, history: { rootId: 'r', currentId: 'r', nodes: {} } };
+    fsState.files.set(FULL_PATH, JSON.stringify(incomplete));
+    const loaded = await load();
+    expect(loaded?.schemaVersion).toBe(4);
+    expect(typeof loaded?.deviceId).toBe('string');
+    expect(loaded?.deviceId).not.toHaveLength(0);
   });
 
   it('returns the parsed payload on success', async () => {
@@ -80,6 +100,7 @@ describe('load', () => {
         { tx: [], cats: { income: [], expense: [] } },
         { idGen: () => 'fixed-id', now: () => 0 },
       ),
+      'device-test',
     );
     fsState.files.set(FULL_PATH, JSON.stringify(d));
     const loaded = await load();
@@ -94,6 +115,7 @@ describe('save', () => {
         { tx: [], cats: { income: [], expense: [] } },
         { idGen: () => 'fixed-id', now: () => 0 },
       ),
+      'device-test',
     );
     await save(d);
     // Final file exists, tmp is gone (rename consumed it).
@@ -108,12 +130,14 @@ describe('save', () => {
         { tx: [], cats: { income: [], expense: [] } },
         { idGen: () => 'a', now: () => 0 },
       ),
+      'device-a',
     );
     const b: DiskFormat = emptyDisk(
       createHistory(
         { tx: [], cats: { income: ['x'], expense: [] } },
         { idGen: () => 'b', now: () => 0 },
       ),
+      'device-b',
     );
     await save(a);
     await save(b);
@@ -130,6 +154,7 @@ describe('round-trip', () => {
         { tx: [], cats: { income: ['A'], expense: ['B'] } },
         { idGen: () => 'rt', now: () => 0 },
       ),
+      'device-rt',
     );
     await save(d);
     const loaded = await load();
@@ -138,12 +163,14 @@ describe('round-trip', () => {
 });
 
 describe('emptyDisk', () => {
-  it('wraps a History with the current schemaVersion', () => {
+  it('wraps a History with the current schemaVersion and the given deviceId', () => {
     const h = createHistory(
       { tx: [], cats: { income: [], expense: [] } },
       { idGen: () => 'r', now: () => 0 },
     );
-    expect(emptyDisk(h).schemaVersion).toBe(3);
-    expect(emptyDisk(h).history).toBe(h);
+    const d = emptyDisk(h, 'device-x');
+    expect(d.schemaVersion).toBe(4);
+    expect(d.history).toBe(h);
+    expect(d.deviceId).toBe('device-x');
   });
 });

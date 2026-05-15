@@ -258,6 +258,22 @@ describe('prune', () => {
   });
 });
 
+describe('commit + deviceId', () => {
+  it('stamps the new snapshot with deviceId when provided in deps', () => {
+    const d: HistoryDeps = { ...deterministicDeps(), deviceId: 'device-A' };
+    let h = createHistory(empty, d);
+    h = commit(h, withTx('a'), 'a', d);
+    expect(h.nodes['n2'].deviceId).toBe('device-A');
+  });
+
+  it('omits deviceId when none is provided', () => {
+    const d = deterministicDeps();
+    let h = createHistory(empty, d);
+    h = commit(h, withTx('a'), 'a', d);
+    expect(h.nodes['n2'].deviceId).toBeUndefined();
+  });
+});
+
 describe('listChronological', () => {
   it('returns snapshots oldest-first', () => {
     const d = deterministicDeps();

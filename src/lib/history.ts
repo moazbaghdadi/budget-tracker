@@ -26,9 +26,10 @@ export type HistoryDeps = {
   idGen?: IdGen;
   now?: Now;
   labels?: Partial<HistoryLabels>;
+  deviceId?: string;
 };
 
-type ResolvedDeps = { idGen: IdGen; now: Now; labels: HistoryLabels };
+type ResolvedDeps = { idGen: IdGen; now: Now; labels: HistoryLabels; deviceId?: string };
 
 function makeNode(
   data: AppData,
@@ -44,6 +45,7 @@ function makeNode(
     createdAt: deps.now(),
     label,
     ...(descriptor ? { descriptor } : {}),
+    ...(deps.deviceId ? { deviceId: deps.deviceId } : {}),
     data,
   };
 }
@@ -53,6 +55,7 @@ function withDeps(deps?: HistoryDeps): ResolvedDeps {
     idGen: deps?.idGen ?? defaultIdGen,
     now: deps?.now ?? defaultNow,
     labels: { ...DEFAULT_LABELS, ...deps?.labels },
+    deviceId: deps?.deviceId,
   };
 }
 

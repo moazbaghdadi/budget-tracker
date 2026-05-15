@@ -59,6 +59,9 @@ export type Snapshot = {
   label: string;
   descriptor?: SnapshotDescriptor;
   data: AppData;
+  // v4 addition. Absent on snapshots authored before the v3→v4 migration; the
+  // sync layer treats absent deviceId as "this device" when reconciling.
+  deviceId?: string;
 };
 
 export type History = {
@@ -67,9 +70,19 @@ export type History = {
   nodes: Record<string, Snapshot>;
 };
 
+// Server-state envelope. Absent on disk = local-only mode. Populated when the
+// user enables sync from Settings (see docs/sync-architecture.md).
+export type ServerState = {
+  url: string;
+  lastSyncedRev: number;
+  pendingPushIds: string[];
+};
+
 export type DiskFormat = {
-  schemaVersion: 3;
+  schemaVersion: 4;
   history: History;
+  deviceId: string;
+  serverState?: ServerState;
 };
 
 export type Screen =

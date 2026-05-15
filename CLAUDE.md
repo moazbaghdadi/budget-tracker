@@ -77,7 +77,10 @@
 - Detected at runtime via `isTauri()`:
   - In Tauri window → `@tauri-apps/plugin-fs` writes atomically to `$AppConfig/budget-tracker/data.json`
   - In browser → `localStorage` key `budget-tracker:data`
-- Disk format: `{ schemaVersion: 2, history }` — bump `schemaVersion` and extend `parseAndMigrate` in `src/lib/persist.ts` for new migrations. v1 → v2 added `attachments: []` to every transaction.
+- Disk format (v4): `{ schemaVersion: 4, history, deviceId, serverState? }`.
+  - `deviceId` is a per-install UUID generated on first load (or during v3 → v4 migration). It also stamps every new `Snapshot.deviceId` so the sync layer can attribute authorship.
+  - `serverState` (optional) holds sync bookkeeping when the user enables sync from Settings. Absent on disk = local-only mode. See `docs/sync-architecture.md` for the full sync design.
+- Bump `SCHEMA_VERSION` and extend `parseAndMigrate` in `src/lib/persist.ts` for new migrations. Current migrators: v3 → v4 (generates a `deviceId`). v1 and v2 have no migrator; old data is discarded silently. The v3 → v4 migration leaves pre-v4 snapshots' `deviceId` absent on purpose — the sync layer treats absent `deviceId` as "this device" when reconciling.
 
 ## Undo-tree
 - `src/lib/history.ts` — every mutation creates a snapshot; non-leaf edits create branches
