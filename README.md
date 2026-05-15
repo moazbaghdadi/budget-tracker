@@ -106,6 +106,14 @@ See [`CLAUDE.md`](./CLAUDE.md) for design preferences (colors, typography, local
 
 ## Roadmap
 
-1. **Now** — Desktop (this repo).
-2. **Next** — Mobile (Android + iOS), reusing `src/lib/*` and most components via React Native or Capacitor.
-3. **Later** — Optional paid sync server for accounts and cross-device backup.
+1. **Now** — Desktop (this repo): Linux, macOS, Windows. Local-only.
+2. **Next** — Mobile (Android, then iOS) via Tauri 2 mobile, sharing the existing React + TypeScript UI.
+3. **Later** — Optional sync. Self-hostable server (Docker) + a usage-billed CodeTiquette-hosted instance for users who don't want to self-host. The standalone offline mode never goes away — sync is strictly opt-in.
+
+## License
+
+[AGPL-3.0-or-later](LICENSE) © Moaz Baghdadi / CodeTiquette.
+
+Free software: redistribute and/or modify under the terms of the GNU Affero General Public License, version 3 or later. See [LICENSE](LICENSE) for the full text.
+
+The AGPL is a copyleft license. If you run a modified copy as a network service, you must publish your changes under the same license.

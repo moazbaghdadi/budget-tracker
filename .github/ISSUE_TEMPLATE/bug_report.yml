@@ -1,0 +1,56 @@
+name: Bug report
+description: Something is broken or unexpected
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report. The more we know, the faster we can fix.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what actually happened?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: From the Settings tab or the window title bar
+      placeholder: e.g. 0.6.0
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Android
+        - iOS
+        - Browser (pnpm dev)
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: UI language
+      placeholder: English / Arabic / German
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Transactions
+        2. Click ...
+        3. See error
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: If you can, open dev tools (Cmd/Ctrl+Shift+I in dev mode) and paste any errors
+      render: shell
