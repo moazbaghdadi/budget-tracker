@@ -45,16 +45,8 @@ function readStoredLang(): Lang | null {
   }
 }
 
-function detectBrowserLang(): Lang {
-  if (typeof navigator === 'undefined') return DEFAULT_LANG;
-  const nav = navigator.language?.toLowerCase() ?? '';
-  if (nav.startsWith('de')) return 'de';
-  if (nav.startsWith('ar')) return 'ar';
-  return DEFAULT_LANG;
-}
-
 function initialLang(): Lang {
-  return readStoredLang() ?? detectBrowserLang();
+  return readStoredLang() ?? DEFAULT_LANG;
 }
 
 export function LangProvider({

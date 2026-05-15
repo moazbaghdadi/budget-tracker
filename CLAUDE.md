@@ -1,21 +1,25 @@
 # Project: متتبع الميزانية — Design Preferences
 
 ## Language & Locale
-- **Bilingual: Arabic (RTL) and German (LTR)**, runtime-switchable via the sidebar footer
-- Default on first launch: browser-detected (`de-*` → German, otherwise Arabic). Choice persisted in `localStorage['budget-tracker:lang']`
-- All UI strings live in the typed dictionary at `src/i18n/messages.ts`. Access them via `useT()` from `src/i18n/LangProvider.tsx` — never hard-code text in JSX
-- Seed data (default categories, sample transactions in `src/lib/reducer.ts`) intentionally stays Arabic; German users rename the defaults as needed
+- **Trilingual: English (LTR, default), Arabic (RTL), German (LTR)** — runtime-switchable via the sidebar footer (button order: EN, AR, DE — same order as `LANGS` in `src/i18n/messages.ts`)
+- Default on first launch: **English**. No browser detection — every fresh install starts in English; the user can switch from the sidebar. Choice persisted in `localStorage['budget-tracker:lang']`
+- All UI strings live in the typed dictionary at `src/i18n/messages.ts`. Access them via `useT()` from `src/i18n/LangProvider.tsx` — never hard-code text in JSX. The Arabic dictionary defines the `MessageKey` master; German and English are typed as `Record<keyof typeof ar, string>` so missing keys break the build
+- Seed data (default categories, sample transactions in `src/lib/reducer.ts`) intentionally stays Arabic; English/German users rename the defaults as needed
 - Use Arabic terminology consistent with the Excel file (التبرعات، رسوم العضوية، الإيجار والمرافق، etc.)
+- **Numbers in the English UI: en-US locale** (1,234.00)
 - **Numbers in the Arabic UI: English numerals** (1,234.00) — never Arabic-Indic (١٬٢٣٤٫٠٠)
 - **Numbers in the German UI: de-DE locale** (1.234,00)
-- `src/lib/format.ts` exports `fmt`/`fmtA`/`fmtDate`/`fmtMonth` that all take a `Lang` parameter. `useT()` exposes pre-bound variants (`fmtMoney`/`fmtMoneyAbs`/`fmtDate`/`fmtMonth`) that read the active language automatically
-- Arabic currency: `€` + narrow NBSP (U+202F) + number, e.g. `€ 1,234.00`
+- `src/lib/format.ts` exports `fmt`/`fmtA`/`fmtDate`/`fmtMonth` that all take a `Lang` parameter (default `'en'`). `useT()` exposes pre-bound variants (`fmtMoney`/`fmtMoneyAbs`/`fmtDate`/`fmtMonth`) that read the active language automatically
+- English currency: `€` + narrow NBSP (U+202F) + number, e.g. `€ 1,234.00`
+- Arabic currency: same as English — `€` + narrow NBSP + number
 - German currency: number + narrow NBSP + `€`, e.g. `1.234,00 €`
+- English dates: `April 1, 2026` (en-US, month-first); months: `April 2026`
+- Arabic dates: `1 أبريل 2026`; German dates: `1. April 2026`
 
 ## Typography
-- Arabic: **IBM Plex Sans Arabic** (weights 400, 500, 600, 700)
-- German: **IBM Plex Sans** (same weights)
-- Both fonts are loaded in `index.html`. CSS variable `--app-font` switches based on `html[data-lang]` (set at document root by LangProvider and by the boot snippet in `src/main.tsx`)
+- Latin (English, German): **IBM Plex Sans** (weights 400, 500, 600, 700) — the default
+- Arabic: **IBM Plex Sans Arabic** (same weights) — applied via `html[data-lang='ar']` override
+- Both fonts are loaded in `index.html`. CSS variable `--app-font` defaults to IBM Plex Sans and switches to IBM Plex Sans Arabic only when `html[data-lang='ar']` (set at document root by LangProvider and by the boot snippet in `src/main.tsx`)
 - Body font uses `var(--app-font)`; a global `button, input, textarea, select { font-family: inherit }` rule cascades it into form elements. Do NOT set inline `fontFamily` in components
 - Minimum font size: 14px for body, 13px for labels/captions
 

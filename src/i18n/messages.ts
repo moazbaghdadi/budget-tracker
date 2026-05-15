@@ -1,7 +1,7 @@
-export const LANGS = ['ar', 'de'] as const;
+export const LANGS = ['en', 'ar', 'de'] as const;
 export type Lang = (typeof LANGS)[number];
 
-export const DEFAULT_LANG: Lang = 'ar';
+export const DEFAULT_LANG: Lang = 'en';
 
 const ar = {
   'app.loading': 'جاري تحميل البيانات…',
@@ -16,6 +16,7 @@ const ar = {
   'lang.label': 'اللغة',
   'lang.ar': 'العربية',
   'lang.de': 'Deutsch',
+  'lang.en': 'English',
 
   'confirm.deleteTx': 'هل تريد حذف هذه المعاملة؟',
   'confirm.deleteCat': 'هل تريد حذف الفئة "{name}"؟',
@@ -192,6 +193,7 @@ const de: Record<keyof typeof ar, string> = {
   'lang.label': 'Sprache',
   'lang.ar': 'العربية',
   'lang.de': 'Deutsch',
+  'lang.en': 'English',
 
   'confirm.deleteTx': 'Diese Buchung wirklich löschen?',
   'confirm.deleteCat': 'Kategorie „{name}" wirklich löschen?',
@@ -359,9 +361,190 @@ const de: Record<keyof typeof ar, string> = {
   'update.error': 'Update fehlgeschlagen: {msg}',
 };
 
+const en: Record<keyof typeof ar, string> = {
+  'app.loading': 'Loading data…',
+  'app.name': 'Budget Tracker',
+
+  'nav.dashboard': 'Dashboard',
+  'nav.transactions': 'Transactions',
+  'nav.categories': 'Categories',
+  'nav.history': 'History',
+  'nav.importExport': 'Import/Export',
+
+  'lang.label': 'Language',
+  'lang.ar': 'العربية',
+  'lang.de': 'Deutsch',
+  'lang.en': 'English',
+
+  'confirm.deleteTx': 'Delete this transaction?',
+  'confirm.deleteCat': 'Delete the category "{name}"?',
+
+  'dashboard.balance': 'Total balance',
+  'dashboard.bankBalance': 'Bank balance',
+  'dashboard.cashBalance': 'Cash balance',
+  'dashboard.monthIncome': 'Income (month)',
+  'dashboard.monthExpense': 'Expenses (month)',
+  'dashboard.monthNet': 'Net (month)',
+  'dashboard.yearIncome': 'Income (year)',
+  'dashboard.yearExpense': 'Expenses (year)',
+  'dashboard.viewAll': 'View all',
+  'dashboard.recent': 'Recent transactions',
+  'dashboard.byCategory': 'Expenses by category',
+  'dashboard.emptyTx': 'No transactions yet',
+  'dashboard.emptyData': 'No data',
+
+  'bucket.bank': 'Bank account',
+  'bucket.cash': 'Cash',
+
+  'tx.title': 'Transactions',
+  'tx.subtitle': 'All income and expenses',
+  'tx.add': 'Add transaction',
+  'tx.filterAll': 'All',
+  'tx.filterIncome': 'Income',
+  'tx.filterExpense': 'Expense',
+  'tx.filterTransfer': 'Transfer',
+  'tx.filterAllBuckets': 'All accounts',
+  'tx.filterBank': 'Bank account',
+  'tx.filterCash': 'Cash',
+  'tx.search': 'Search',
+  'tx.searchPlaceholder': 'Search…',
+  'tx.empty': 'No transactions',
+  'tx.col.date': 'Date',
+  'tx.col.type': 'Type',
+  'tx.col.bucket': 'Account',
+  'tx.col.category': 'Category',
+  'tx.col.description': 'Description',
+  'tx.col.amount': 'Amount',
+  'tx.typeIncome': 'Income',
+  'tx.typeExpense': 'Expense',
+  'tx.typeTransfer': 'Transfer',
+  'tx.deleteAria': 'Delete transaction',
+  'tx.editAria': 'Edit transaction',
+
+  'modal.tx.title': 'Add new transaction',
+  'modal.tx.editTitle': 'Edit transaction',
+  'modal.close': 'Close',
+  'modal.field.type': 'Type',
+  'modal.field.bucket': 'Account',
+  'modal.field.fromBucket': 'From',
+  'modal.field.toBucket': 'To',
+  'modal.field.category': 'Category',
+  'modal.field.description': 'Description (optional)',
+  'modal.field.descriptionShort': 'Description',
+  'modal.field.amount': 'Amount (€)',
+  'modal.field.amountShort': 'Amount',
+  'modal.field.date': 'Date',
+  'modal.field.descPlaceholder': 'e.g. Office rent — April',
+  'modal.field.descSuggestions': 'Suggestions',
+  'modal.noCategories': 'No categories yet — please add one from the "Categories" screen first',
+  'modal.save': 'Save transaction',
+  'modal.editSave': 'Save changes',
+  'modal.error.pickCategory': 'Please choose a category',
+  'modal.error.amount': 'Please enter a valid amount',
+
+  'cats.title': 'Manage categories',
+  'cats.subtitle': 'Categories appear automatically when you add a new transaction',
+  'cats.income': 'Income categories',
+  'cats.expense': 'Expense categories',
+  'cats.empty': 'No categories yet',
+  'cats.newPlaceholder': 'New category name…',
+  'cats.newLabel': 'New category name',
+  'cats.addBtn': 'Add category',
+  'cats.deleteAria': 'Delete category {name}',
+
+  'history.title': 'History',
+  'history.subtitle':
+    'Every change is saved as a version. You can restore any earlier version at any time.',
+  'history.empty': 'No versions yet',
+  'history.current': 'Current',
+  'history.restore': 'Restore',
+  'history.restoreStart': 'Restore start',
+  'history.rootLabel': 'Start',
+  'history.restorePrefix': 'Restore',
+
+  'action.undo': 'Undo',
+  'action.redo': 'Redo',
+  'action.undoTooltip': 'Undo: {label}',
+  'action.redoTooltip': 'Redo: {label}',
+  'action.undoNone': 'Nothing to undo',
+  'action.redoNone': 'Nothing to redo',
+
+  'undo.addIncome': 'Add income',
+  'undo.addExpense': 'Add expense',
+  'undo.addTransfer': 'Add transfer',
+  'undo.deleteIncome': 'Delete income',
+  'undo.deleteExpense': 'Delete expense',
+  'undo.deleteTransfer': 'Delete transfer',
+  'undo.deleteTx': 'Delete transaction',
+  'undo.editIncome': 'Edit income',
+  'undo.editExpense': 'Edit expense',
+  'undo.editTransfer': 'Edit transfer',
+  'undo.addCatIncome': 'Add income category',
+  'undo.addCatExpense': 'Add expense category',
+  'undo.removeCatIncome': 'Delete income category',
+  'undo.removeCatExpense': 'Delete expense category',
+  'undo.addAttachment': 'Add attachment',
+  'undo.removeAttachment': 'Remove attachment',
+  'undo.importAppend': 'Import (append)',
+  'undo.importReplace': 'Import (replace)',
+
+  'modal.field.attachments': 'Attachments (optional)',
+  'modal.attachments.add': 'Attach file',
+  'modal.attachments.empty': 'No attachments',
+  'modal.attachments.remove': 'Remove',
+  'modal.attachments.open': 'Open',
+  'modal.attachments.webDisabled': 'File attachments are only available in the desktop app',
+  'modal.attachments.confirmRemove': 'Remove this attachment?',
+  'modal.attachments.openError': 'Could not open the file',
+  'modal.attachments.copyError': 'Could not copy the file',
+
+  'tx.attachments.title': 'Transaction attachments',
+  'tx.attachments.aria': 'Attachments',
+  'tx.attachments.count': '{count} attachment(s)',
+
+  'importExport.title': 'Import & Export',
+  'importExport.subtitle':
+    'Save your data to an Excel file, or import data from an Excel file.',
+  'importExport.export.title': 'Export to Excel',
+  'importExport.export.desc':
+    'Saves all current transactions and categories to an Excel file with two sheets.',
+  'importExport.export.btn': 'Export now',
+  'importExport.export.success': 'Saved to {path}',
+  'importExport.import.title': 'Import from Excel',
+  'importExport.import.desc':
+    'Choose an Excel file to preview its contents before appending or replacing.',
+  'importExport.import.btn': 'Choose file…',
+  'importExport.import.found': 'Found {tx} transactions and {cat} categories',
+  'importExport.import.skipped': '{n} row(s) skipped due to errors',
+  'importExport.import.append': 'Append to existing',
+  'importExport.import.replace': 'Replace all',
+  'importExport.import.confirmReplace':
+    'This will replace all current data. You can undo it later from the History screen. Continue?',
+  'importExport.import.cancel': 'Cancel',
+  'importExport.import.successAppend': 'Added {tx} transactions and {cat} new categories',
+  'importExport.import.successReplace': 'Data replaced: {tx} transactions, {cat} categories',
+  'importExport.import.skippedRow': 'Row {row}: {reason}',
+  'importExport.import.moreSkipped': '+ {n} more…',
+  'importExport.webDisabled': 'Import & Export are only available in the desktop app',
+  'importExport.error.parse': 'Could not read the file. Make sure it is a valid Excel file.',
+  'importExport.error.noData': 'This file contains no importable data',
+  'importExport.error.write': 'Could not save the file',
+  'importExport.error.read': 'Could not read the file',
+  'importExport.error.missingSheet': 'The file does not contain a sheet named "{name}"',
+
+  'update.available': 'Update available',
+  'update.newVersion': 'New version: {version}',
+  'update.releaseNotes': 'What’s new',
+  'update.install': 'Install now',
+  'update.later': 'Later',
+  'update.downloading': 'Downloading… {pct}%',
+  'update.installing': 'Installing…',
+  'update.error': 'Update failed: {msg}',
+};
+
 export type MessageKey = keyof typeof ar;
 
-export const messages: Record<Lang, Record<MessageKey, string>> = { ar, de };
+export const messages: Record<Lang, Record<MessageKey, string>> = { en, ar, de };
 
 export function translate(lang: Lang, key: MessageKey): string {
   return messages[lang][key];

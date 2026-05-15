@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   AR_MONTHS,
   DE_MONTHS,
+  EN_MONTHS,
   fmt,
   fmtA,
   fmtN,
@@ -33,14 +34,21 @@ describe('fmtN', () => {
     expect(fmtN(1234.56, 'de')).toBe('1.234,56');
     expect(fmtN(1000000, 'de')).toBe('1.000.000,00');
   });
+  it('Arabic locale uses en-US digits (same as default)', () => {
+    expect(fmtN(1234, 'ar')).toBe('1,234.00');
+  });
 });
 
 describe('fmt / fmtA', () => {
-  it('Arabic-locale: € prefix with narrow NBSP', () => {
+  it('English-locale (default): € prefix with narrow NBSP', () => {
     expect(fmtA(50)).toBe(`€${NNBSP}50.00`);
     expect(fmtA(-50)).toBe(`€${NNBSP}50.00`);
     expect(fmt(50)).toBe(`€${NNBSP}50.00`);
     expect(fmt(-50)).toBe(`-€${NNBSP}50.00`);
+  });
+  it('Arabic-locale: € prefix with narrow NBSP (mirrors English)', () => {
+    expect(fmtA(50, 'ar')).toBe(`€${NNBSP}50.00`);
+    expect(fmt(-50, 'ar')).toBe(`-€${NNBSP}50.00`);
   });
   it('German-locale: € suffix with narrow NBSP', () => {
     expect(fmtA(50, 'de')).toBe(`50,00${NNBSP}€`);
@@ -60,9 +68,13 @@ describe('parseDate', () => {
 });
 
 describe('fmtDate', () => {
+  it('English (default): "April 1, 2026"', () => {
+    expect(fmtDate('2026-04-01')).toBe('April 1, 2026');
+    expect(fmtDate('2026-12-31')).toBe('December 31, 2026');
+  });
   it('Arabic: "1 أبريل 2026"', () => {
-    expect(fmtDate('2026-04-01')).toBe('1 أبريل 2026');
-    expect(fmtDate('2026-12-31')).toBe('31 ديسمبر 2026');
+    expect(fmtDate('2026-04-01', 'ar')).toBe('1 أبريل 2026');
+    expect(fmtDate('2026-12-31', 'ar')).toBe('31 ديسمبر 2026');
   });
   it('German: "1. April 2026"', () => {
     expect(fmtDate('2026-04-01', 'de')).toBe('1. April 2026');
@@ -71,9 +83,13 @@ describe('fmtDate', () => {
 });
 
 describe('fmtMonth', () => {
+  it('English (default): "January 2026"', () => {
+    expect(fmtMonth('2026-01')).toBe('January 2026');
+    expect(fmtMonth('2026-12')).toBe('December 2026');
+  });
   it('Arabic: "يناير 2026"', () => {
-    expect(fmtMonth('2026-01')).toBe('يناير 2026');
-    expect(fmtMonth('2026-12')).toBe('ديسمبر 2026');
+    expect(fmtMonth('2026-01', 'ar')).toBe('يناير 2026');
+    expect(fmtMonth('2026-12', 'ar')).toBe('ديسمبر 2026');
   });
   it('German: "Januar 2026"', () => {
     expect(fmtMonth('2026-01', 'de')).toBe('Januar 2026');
@@ -91,6 +107,11 @@ describe('month arrays', () => {
     expect(DE_MONTHS).toHaveLength(12);
     expect(DE_MONTHS[0]).toBe('Januar');
     expect(DE_MONTHS[11]).toBe('Dezember');
+  });
+  it('EN_MONTHS has 12 English months in order', () => {
+    expect(EN_MONTHS).toHaveLength(12);
+    expect(EN_MONTHS[0]).toBe('January');
+    expect(EN_MONTHS[11]).toBe('December');
   });
 });
 

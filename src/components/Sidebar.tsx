@@ -1,7 +1,7 @@
 import type { Screen } from '../types';
 import { NAV_ITEMS } from './nav-items';
 import { useT } from '../i18n/LangProvider';
-import { LANGS, type Lang } from '../i18n/messages';
+import { LANGS, type Lang, type MessageKey } from '../i18n/messages';
 
 type Props = {
   screen: Screen;
@@ -158,7 +158,7 @@ export function Sidebar({ screen, setScreen }: Props) {
                   cursor: 'pointer',
                 }}
               >
-                {t(l === 'ar' ? 'lang.ar' : 'lang.de')}
+                {t(`lang.${l}` as MessageKey)}
               </button>
             );
           })}

@@ -20,11 +20,11 @@
   --sidebar-w: 72px;
   --sidebar-w-lg: 240px;
   --nav-h: 72px;
-  --app-font: 'IBM Plex Sans Arabic', sans-serif;
+  --app-font: 'IBM Plex Sans', sans-serif;
 }
 
-html[data-lang='de'] {
-  --app-font: 'IBM Plex Sans', sans-serif;
+html[data-lang='ar'] {
+  --app-font: 'IBM Plex Sans Arabic', sans-serif;
 }
 
 body {
