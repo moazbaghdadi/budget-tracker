@@ -81,35 +81,35 @@ export default function App() {
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar screen={store.screen} setScreen={store.setScreen} />
       <main style={{ flex: 1, overflow: 'auto' }}>
-        <div
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            background: 'var(--bg)',
-            borderBottom: '1px solid var(--border)',
-            padding: isMobile
-              ? 'calc(16px + env(safe-area-inset-top)) 14px 10px 14px'
-              : '12px 36px',
-            display: 'flex',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <UndoRedoBar
-            canUndo={store.canUndo}
-            canRedo={store.canRedo}
-            undoLabel={store.undoLabel}
-            redoLabel={store.redoLabel}
-            onUndo={store.undo}
-            onRedo={store.redo}
-          />
-        </div>
+        {!isMobile && (
+          <div
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              background: 'var(--bg)',
+              borderBottom: '1px solid var(--border)',
+              padding: '12px 36px',
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <UndoRedoBar
+              canUndo={store.canUndo}
+              canRedo={store.canRedo}
+              undoLabel={store.undoLabel}
+              redoLabel={store.redoLabel}
+              onUndo={store.undo}
+              onRedo={store.redo}
+            />
+          </div>
+        )}
         <div
           style={{
             maxWidth: 1100,
             margin: '0 auto',
             padding: isMobile
-              ? '18px 14px calc(72px + env(safe-area-inset-bottom)) 14px'
+              ? 'calc(18px + env(safe-area-inset-top)) 14px calc(72px + env(safe-area-inset-bottom)) 14px'
               : '32px 36px',
           }}
         >
