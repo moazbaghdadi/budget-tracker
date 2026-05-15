@@ -183,5 +183,5 @@ export PATH="$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/late
 - `applicationId` is `com.codetiquette.budgettracker` (CodeTiquette developer account on Play Store). The desktop identifier `com.moazbaghdadi.budget-tracker` in `tauri.conf.json` stays unchanged.
 - `minSdk = 26` (Android 8.0); see § Mobile targets above for the rationale.
 - `tauri-plugin-updater` is desktop-only: the Cargo dep is target-gated (`cfg(not(android|ios))`) and the init call in `src-tauri/src/lib.rs` is `#[cfg(desktop)]`-gated. Mobile updates flow through Play Store.
-- On-device data path: `/data/user/0/com.codetiquette.budgettracker/files/budget-tracker/data.json` (sandboxed, not user-browsable; inspect via `adb shell run-as com.codetiquette.budgettracker ls files/budget-tracker/`).
+- On-device data path: `/data/user/0/com.codetiquette.budgettracker/budget-tracker/data.json` — under the app's data root, **not** under `files/` (verified on Android via Tauri's `BaseDirectory.AppConfig`). Inspect via `adb shell run-as com.codetiquette.budgettracker ls budget-tracker/`.
 - Generated Gradle/Android files in `src-tauri/gen/android/` are committed; the inner `.gitignore` keeps build outputs out.

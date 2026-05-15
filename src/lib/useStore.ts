@@ -92,7 +92,12 @@ export function useStore(): Store {
       if (loaded) {
         setHistory(loaded.history);
         setDeviceId(loaded.deviceId);
-        lastSavedRef.current = JSON.stringify(loaded);
+        // Deliberately do NOT seed lastSavedRef here. After a load we don't
+        // know if parseAndMigrate had to migrate (e.g. v3 → v4 generates
+        // deviceId); seeding the ref would let the save-skip optimisation
+        // see "already saved" and leave the disk on the pre-migration
+        // schema. Letting the first save effect run unconditionally writes
+        // the migrated form to disk; subsequent saves still dedupe normally.
       } else {
         setDeviceId(makeDeviceId());
       }
