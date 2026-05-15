@@ -107,3 +107,49 @@
 - Signing keypair: private key + password live as GitHub secrets `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Public key is embedded in `src-tauri/tauri.conf.json` under `plugins.updater.pubkey`. The local copy is at `~/.tauri/budget-tracker.key{,.pub,.password}` — never commit any of these.
 - **Losing the signing private key bricks all future auto-updates** (every installed client validates against the embedded public key, so rotating the key would orphan existing installs). Treat it like a code-signing cert.
 - `bundle.createUpdaterArtifacts: true` in `tauri.conf.json` is what causes `tauri-action` to produce `.sig` files alongside each installer.
+
+## Mobile targets
+
+Mobile port plan lives at `~/.claude/plans/mobile-port.md`. Phase-0 decisions recorded below; later phases implement them.
+
+### Target platforms
+- **Android first.** Buildable from Linux on `ubuntu-latest` CI; $25 one-time Play Console fee.
+- **iOS deferred.** Gated on Mac access (physical or `macos-latest` GitHub runner) and Apple Developer enrollment ($99/yr). Treat as a separate optional milestone.
+
+### Minimum OS versions
+- **Android: API 26** (Android 8.0, 2017). Tauri's default minimum is API 24 (7.0); API 26 buys an updatable WebView via Play Store with negligible user-base loss.
+- **iOS (when iOS lands): 15.4** — required for `oklch()` colors in WKWebView. (Earlier versions would force a palette rewrite.)
+
+### Android applicationId
+- Android `applicationId`: **`com.codetiquette.budgettracker`** — publishing under the CodeTiquette developer account on Play Store.
+- Desktop identifier (`com.moazbaghdadi.budget-tracker`) stays unchanged in `tauri.conf.json`. Changing it would orphan existing macOS/Linux/Windows installs (the OS treats a new identifier as a different app).
+- The two diverging is deliberate. Override the Android `applicationId` per-platform in the Gradle config that `tauri android init` scaffolds; do not touch the top-level `identifier` in `tauri.conf.json`.
+- Note: Play Console does **not** require apps in the same developer account to share a reverse-DNS prefix. It only enforces global uniqueness across the store + valid Java package syntax (which the desktop identifier fails because of the hyphen).
+
+### Plugin support matrix (verified May 2026 against v2.tauri.app)
+| Plugin | Desktop | Android | iOS | Notes for our usage |
+|---|---|---|---|---|
+| `plugin-fs` | ✅ | ✅ (sandboxed to app dir) | ✅ (sandboxed; needs `PrivacyInfo.xcprivacy` for `NSPrivacyAccessedAPICategoryFileTimestamp`) | `persist-tauri.ts` only touches `BaseDirectory.AppConfig`, fully supported |
+| `plugin-dialog` | ✅ | ⚠️ open() returns **content URIs**, no folder picker | ⚠️ open() returns `file://` URIs, no folder picker | Breaks `attachments.ts` and `excel.ts` (both assume plain paths) |
+| `plugin-opener` | ✅ | ⚠️ **URLs only** — no local file open | ⚠️ URLs only | Breaks `openAttachment` on mobile |
+| `plugin-process` | ✅ | ❌ | ❌ | `relaunch()` / `exit()` unavailable on mobile |
+| `plugin-updater` | ✅ | ❌ | ❌ | Mobile uses store updates |
+
+### v1 feature scope on mobile
+| Feature | Desktop | Mobile (v1) | Rationale |
+|---|---|---|---|
+| Dashboard | ✅ | ✅ | Core feature |
+| Transactions | ✅ | ✅ | Core feature |
+| Categories | ✅ | ✅ | Core feature |
+| Settings (language) | ✅ | ✅ | Verify Arabic RTL on the AVD during Phase 3 |
+| History (undo-tree browser) | ✅ | ❌ hide | Already desktop-only by design; small-screen UX cost not worth a v1 port |
+| Import/Export `.xlsx` | ✅ | ❌ hide | `dialog.open` returns content URIs that `plugin-fs.readFile` can't consume; xlsx bundle is heavy on mobile cold start |
+| Attachments | ✅ | ❌ hide | `dialog.open` → URI mismatch with the Rust `std::fs::copy` command, plus `opener` can't open local files on mobile. Full support would need custom JNI + FileProvider |
+| OTA auto-updater | ✅ | ❌ disable | `plugin-updater` is desktop-only; Play Store handles updates |
+
+All mobile-hidden features stay fully functional on desktop. Gating is implemented in Phase 5 via an `isMobile()` helper; the Cargo dependency on `tauri-plugin-updater` will be conditionally compiled with `#[cfg(desktop)]` to keep it out of mobile builds.
+
+### Known mobile-specific risks (carried into later phases)
+- `isTauri()` (currently `'__TAURI_INTERNALS__' in window`) is `true` on mobile too, so the Tauri persistence path runs. Good — but anywhere that conflates "Tauri" with "desktop" needs auditing in Phase 5.
+- Fonts (IBM Plex Sans + Plex Sans Arabic) load from Google Fonts via `index.html`. The CSP already allows `fonts.googleapis.com` / `fonts.gstatic.com`. On mobile cold-start with no network, fonts fall back to system; acceptable.
+- `oklch()` colors require Chrome WebView ≥ 111 (Android) and WKWebView ≥ 15.4 (iOS). Both are above the floors picked above.
