@@ -13,7 +13,6 @@
     "fs:write-files",
     "dialog:default",
     "opener:default",
-    "updater:default",
     "process:default",
     {
       "identifier": "opener:allow-open-path",
