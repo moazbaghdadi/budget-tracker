@@ -33,9 +33,9 @@ test('switching to Deutsch flips html dir/lang and updates UI', async ({ page })
   await expect(page.getByRole('button', { name: 'Kategorien' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Verlauf' })).toBeVisible();
 
-  // The dashboard balance card shows currency in German convention (number then €).
-  // Empty-state balance card renders "0,00 €" in German — assert digit-then-€ ordering.
-  const balanceCard = page.locator('text=/\\d.*€/').first();
+  // The dashboard balance card renders EUR with the per-currency prefix
+  // position regardless of language ("€ 0,00" in German, "€ 0.00" elsewhere).
+  const balanceCard = page.locator('text=/€.*\\d/').first();
   await expect(balanceCard).toBeVisible();
 });
 

@@ -627,6 +627,126 @@ describe('reduce: importData', () => {
   });
 });
 
+describe('reduce: seedOpeningBalances', () => {
+  const baseAction = {
+    bankTxId: 'btx',
+    cashTxId: 'ctx',
+    dateIso: '2026-05-16',
+    categoryName: 'Opening balance',
+    bankDescription: 'Initial bank balance',
+    cashDescription: 'Initial cash balance',
+  };
+
+  it('is a no-op when both buckets are zero', () => {
+    const next = reduce(blank, {
+      kind: 'seedOpeningBalances',
+      bank: 0,
+      cash: 0,
+      ...baseAction,
+    });
+    expect(next).toBe(blank);
+  });
+
+  it('creates one bank income transaction and the category when only bank is non-zero', () => {
+    const next = reduce(blank, {
+      kind: 'seedOpeningBalances',
+      bank: 1000,
+      cash: 0,
+      ...baseAction,
+    });
+    expect(next.tx).toHaveLength(1);
+    expect(next.tx[0]).toMatchObject({
+      id: 'btx',
+      type: 'income',
+      bucket: 'bank',
+      amount: 1000,
+      category: 'Opening balance',
+      date: '2026-05-16',
+    });
+    expect(next.cats.income).toEqual(['Opening balance']);
+  });
+
+  it('creates one cash income transaction when only cash is non-zero', () => {
+    const next = reduce(blank, {
+      kind: 'seedOpeningBalances',
+      bank: 0,
+      cash: 200,
+      ...baseAction,
+    });
+    expect(next.tx).toHaveLength(1);
+    expect(next.tx[0]).toMatchObject({ id: 'ctx', bucket: 'cash', amount: 200 });
+  });
+
+  it('creates both transactions when both buckets are non-zero', () => {
+    const next = reduce(blank, {
+      kind: 'seedOpeningBalances',
+      bank: 1000,
+      cash: 200,
+      ...baseAction,
+    });
+    expect(next.tx).toHaveLength(2);
+    expect(next.tx.map((t) => t.bucket)).toEqual(['bank', 'cash']);
+    expect(next.cats.income).toEqual(['Opening balance']);
+  });
+
+  it('does not duplicate an existing category', () => {
+    const seeded: AppData = {
+      tx: [],
+      cats: { income: ['Opening balance'], expense: [] },
+    };
+    const next = reduce(seeded, {
+      kind: 'seedOpeningBalances',
+      bank: 1000,
+      cash: 0,
+      ...baseAction,
+    });
+    expect(next.cats.income).toEqual(['Opening balance']);
+  });
+
+  it('does not mutate the input state', () => {
+    const before = JSON.stringify(blank);
+    reduce(blank, {
+      kind: 'seedOpeningBalances',
+      bank: 1000,
+      cash: 200,
+      ...baseAction,
+    });
+    expect(JSON.stringify(blank)).toBe(before);
+  });
+});
+
+describe('describeAction: seedOpeningBalances', () => {
+  const baseAction = {
+    bankTxId: 'btx',
+    cashTxId: 'ctx',
+    dateIso: '2026-05-16',
+    categoryName: 'رصيد افتتاحي',
+    bankDescription: '',
+    cashDescription: '',
+  };
+  it('describes a both-bucket seed with both bucket labels and amounts', () => {
+    const s = describeAction(
+      blank,
+      { kind: 'seedOpeningBalances', bank: 1000, cash: 200, ...baseAction },
+      tAr,
+    );
+    expect(s).toContain(messages.ar['undo.firstRunSeed']);
+    expect(s).toContain(messages.ar['bucket.bank']);
+    expect(s).toContain(messages.ar['bucket.cash']);
+    expect(s).toContain('1,000');
+    expect(s).toContain('200');
+  });
+  it('describes a bank-only seed with just the bank label', () => {
+    const s = describeAction(
+      blank,
+      { kind: 'seedOpeningBalances', bank: 500, cash: 0, ...baseAction },
+      tAr,
+    );
+    expect(s).toContain(messages.ar['bucket.bank']);
+    expect(s).not.toContain(messages.ar['bucket.cash']);
+  });
+});
+
 describe('describeAction: importData', () => {
   it('describes append mode with the transaction count', () => {
     const s = describeAction(

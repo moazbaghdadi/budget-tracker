@@ -80,7 +80,7 @@ const ar = {
   'modal.field.category': 'الفئة',
   'modal.field.description': 'الوصف (اختياري)',
   'modal.field.descriptionShort': 'الوصف',
-  'modal.field.amount': 'المبلغ (€)',
+  'modal.field.amount': 'المبلغ',
   'modal.field.amountShort': 'المبلغ',
   'modal.field.date': 'التاريخ',
   'modal.field.descPlaceholder': 'مثال: إيجار المكتب — أبريل',
@@ -185,6 +185,30 @@ const ar = {
   'update.downloading': 'جاري التحميل… {pct}٪',
   'update.installing': 'جاري التثبيت…',
   'update.error': 'فشل التحديث: {msg}',
+
+  'settings.section.currency': 'العملة',
+
+  'currency.label.EUR': 'يورو',
+  'currency.label.USD': 'دولار أمريكي',
+  'currency.label.GBP': 'جنيه إسترليني',
+  'currency.label.SYP': 'ليرة سورية',
+  'currency.label.SAR': 'ريال سعودي',
+  'currency.label.AED': 'درهم إماراتي',
+  'currency.label.TRY': 'ليرة تركية',
+
+  'firstRun.title': 'مرحبًا بك في محاسب تك',
+  'firstRun.intro': 'اختر العملة التي تستخدمها. يمكنك أيضًا إدخال رصيدك الحالي للبدء.',
+  'firstRun.field.currency': 'العملة',
+  'firstRun.field.bank': 'رصيد البنك الافتتاحي',
+  'firstRun.field.cash': 'رصيد النقد الافتتاحي',
+  'firstRun.help.balances': 'اتركها 0 إذا لم ترغب في تحديد رصيد افتتاحي.',
+  'firstRun.cta': 'ابدأ الآن',
+
+  'category.openingBalance': 'رصيد افتتاحي',
+  'tx.openingBalance.bank': 'الرصيد الافتتاحي للحساب البنكي',
+  'tx.openingBalance.cash': 'الرصيد الافتتاحي للنقد',
+
+  'undo.firstRunSeed': 'إعداد أولي',
 } as const;
 
 const de: Record<keyof typeof ar, string> = {
@@ -264,7 +288,7 @@ const de: Record<keyof typeof ar, string> = {
   'modal.field.category': 'Kategorie',
   'modal.field.description': 'Beschreibung (optional)',
   'modal.field.descriptionShort': 'Beschreibung',
-  'modal.field.amount': 'Betrag (€)',
+  'modal.field.amount': 'Betrag',
   'modal.field.amountShort': 'Betrag',
   'modal.field.date': 'Datum',
   'modal.field.descPlaceholder': 'z. B. Büromiete – April',
@@ -373,6 +397,31 @@ const de: Record<keyof typeof ar, string> = {
   'update.downloading': 'Wird heruntergeladen … {pct} %',
   'update.installing': 'Wird installiert …',
   'update.error': 'Update fehlgeschlagen: {msg}',
+
+  'settings.section.currency': 'Währung',
+
+  'currency.label.EUR': 'Euro',
+  'currency.label.USD': 'US-Dollar',
+  'currency.label.GBP': 'Britisches Pfund',
+  'currency.label.SYP': 'Syrisches Pfund',
+  'currency.label.SAR': 'Saudi-Riyal',
+  'currency.label.AED': 'VAE-Dirham',
+  'currency.label.TRY': 'Türkische Lira',
+
+  'firstRun.title': 'Willkommen bei Muhaseb Tech',
+  'firstRun.intro':
+    'Wählen Sie Ihre Währung. Sie können auch Ihren aktuellen Kontostand eintragen, um direkt loszulegen.',
+  'firstRun.field.currency': 'Währung',
+  'firstRun.field.bank': 'Anfangs-Bankkontostand',
+  'firstRun.field.cash': 'Anfangs-Bargeldbestand',
+  'firstRun.help.balances': 'Auf 0 belassen, wenn Sie keinen Anfangsbestand erfassen möchten.',
+  'firstRun.cta': 'Loslegen',
+
+  'category.openingBalance': 'Anfangsbestand',
+  'tx.openingBalance.bank': 'Anfangsbestand Bankkonto',
+  'tx.openingBalance.cash': 'Anfangsbestand Bargeld',
+
+  'undo.firstRunSeed': 'Erste Einrichtung',
 };
 
 const en: Record<keyof typeof ar, string> = {
@@ -452,7 +501,7 @@ const en: Record<keyof typeof ar, string> = {
   'modal.field.category': 'Category',
   'modal.field.description': 'Description (optional)',
   'modal.field.descriptionShort': 'Description',
-  'modal.field.amount': 'Amount (€)',
+  'modal.field.amount': 'Amount',
   'modal.field.amountShort': 'Amount',
   'modal.field.date': 'Date',
   'modal.field.descPlaceholder': 'e.g. Office rent — April',
@@ -561,6 +610,30 @@ const en: Record<keyof typeof ar, string> = {
   'update.downloading': 'Downloading… {pct}%',
   'update.installing': 'Installing…',
   'update.error': 'Update failed: {msg}',
+
+  'settings.section.currency': 'Currency',
+
+  'currency.label.EUR': 'Euro',
+  'currency.label.USD': 'US Dollar',
+  'currency.label.GBP': 'British Pound',
+  'currency.label.SYP': 'Syrian Pound',
+  'currency.label.SAR': 'Saudi Riyal',
+  'currency.label.AED': 'UAE Dirham',
+  'currency.label.TRY': 'Turkish Lira',
+
+  'firstRun.title': 'Welcome to Muhaseb Tech',
+  'firstRun.intro': 'Pick your currency. You can also enter your current balance to start.',
+  'firstRun.field.currency': 'Currency',
+  'firstRun.field.bank': 'Opening bank balance',
+  'firstRun.field.cash': 'Opening cash balance',
+  'firstRun.help.balances': "Leave at 0 if you don't want a starting balance.",
+  'firstRun.cta': 'Get started',
+
+  'category.openingBalance': 'Opening balance',
+  'tx.openingBalance.bank': 'Initial bank account balance',
+  'tx.openingBalance.cash': 'Initial cash balance',
+
+  'undo.firstRunSeed': 'Initial setup',
 };
 
 export type MessageKey = keyof typeof ar;

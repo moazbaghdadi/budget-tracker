@@ -40,21 +40,43 @@ describe('fmtN', () => {
 });
 
 describe('fmt / fmtA', () => {
-  it('English-locale (default): € prefix with narrow NBSP', () => {
+  it('English default (EUR): € prefix with narrow NBSP', () => {
     expect(fmtA(50)).toBe(`€${NNBSP}50.00`);
     expect(fmtA(-50)).toBe(`€${NNBSP}50.00`);
     expect(fmt(50)).toBe(`€${NNBSP}50.00`);
     expect(fmt(-50)).toBe(`-€${NNBSP}50.00`);
   });
-  it('Arabic-locale: € prefix with narrow NBSP (mirrors English)', () => {
+  it('Arabic + EUR: prefix with narrow NBSP', () => {
     expect(fmtA(50, 'ar')).toBe(`€${NNBSP}50.00`);
     expect(fmt(-50, 'ar')).toBe(`-€${NNBSP}50.00`);
   });
-  it('German-locale: € suffix with narrow NBSP', () => {
-    expect(fmtA(50, 'de')).toBe(`50,00${NNBSP}€`);
-    expect(fmtA(1234.5, 'de')).toBe(`1.234,50${NNBSP}€`);
-    expect(fmt(1234.5, 'de')).toBe(`1.234,50${NNBSP}€`);
-    expect(fmt(-1234.5, 'de')).toBe(`-1.234,50${NNBSP}€`);
+  it('German + EUR: prefix (position is per-currency, not per-language) with German number separators', () => {
+    expect(fmtA(50, 'de')).toBe(`€${NNBSP}50,00`);
+    expect(fmtA(1234.5, 'de')).toBe(`€${NNBSP}1.234,50`);
+    expect(fmt(1234.5, 'de')).toBe(`€${NNBSP}1.234,50`);
+    expect(fmt(-1234.5, 'de')).toBe(`-€${NNBSP}1.234,50`);
+  });
+  it('USD: $ prefix', () => {
+    expect(fmt(1234.5, 'en', 'USD')).toBe(`$${NNBSP}1,234.50`);
+    expect(fmt(-1234.5, 'en', 'USD')).toBe(`-$${NNBSP}1,234.50`);
+    expect(fmtA(1234.5, 'en', 'USD')).toBe(`$${NNBSP}1,234.50`);
+  });
+  it('GBP: £ prefix', () => {
+    expect(fmt(50, 'en', 'GBP')).toBe(`£${NNBSP}50.00`);
+  });
+  it('TRY: ₺ prefix', () => {
+    expect(fmt(50, 'en', 'TRY')).toBe(`₺${NNBSP}50.00`);
+  });
+  it('SYP: ل.س suffix', () => {
+    expect(fmt(1234.5, 'en', 'SYP')).toBe(`1,234.50${NNBSP}ل.س`);
+    expect(fmt(-1234.5, 'en', 'SYP')).toBe(`-1,234.50${NNBSP}ل.س`);
+    expect(fmtA(-50, 'en', 'SYP')).toBe(`50.00${NNBSP}ل.س`);
+  });
+  it('SAR: ر.س suffix', () => {
+    expect(fmt(50, 'ar', 'SAR')).toBe(`50.00${NNBSP}ر.س`);
+  });
+  it('AED: د.إ suffix', () => {
+    expect(fmt(50, 'ar', 'AED')).toBe(`50.00${NNBSP}د.إ`);
   });
 });
 

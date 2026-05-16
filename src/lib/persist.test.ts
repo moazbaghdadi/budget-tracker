@@ -74,24 +74,76 @@ describe('load', () => {
     expect(await load()).toBeNull();
   });
 
-  it('migrates v3 → v4 by generating a deviceId', async () => {
+  it('migrates v3 → v5 by generating a deviceId and defaulting currency to EUR', async () => {
     const v3 = { schemaVersion: 3, history: { rootId: 'r', currentId: 'r', nodes: {} } };
     fsState.files.set(FULL_PATH, JSON.stringify(v3));
     const loaded = await load();
     expect(loaded).not.toBeNull();
-    expect(loaded?.schemaVersion).toBe(4);
+    expect(loaded?.schemaVersion).toBe(5);
     expect(loaded?.history).toEqual(v3.history);
     expect(typeof loaded?.deviceId).toBe('string');
     expect(loaded?.deviceId).not.toHaveLength(0);
+    expect(loaded?.currency).toBe('EUR');
   });
 
-  it('backfills a missing deviceId on a v4 file', async () => {
+  it('migrates v4 → v5 by defaulting currency to EUR and preserving deviceId', async () => {
+    const v4 = {
+      schemaVersion: 4,
+      history: { rootId: 'r', currentId: 'r', nodes: {} },
+      deviceId: 'existing-device',
+    };
+    fsState.files.set(FULL_PATH, JSON.stringify(v4));
+    const loaded = await load();
+    expect(loaded?.schemaVersion).toBe(5);
+    expect(loaded?.deviceId).toBe('existing-device');
+    expect(loaded?.currency).toBe('EUR');
+  });
+
+  it('backfills a missing deviceId during v4 → v5 migration', async () => {
     const incomplete = { schemaVersion: 4, history: { rootId: 'r', currentId: 'r', nodes: {} } };
     fsState.files.set(FULL_PATH, JSON.stringify(incomplete));
     const loaded = await load();
-    expect(loaded?.schemaVersion).toBe(4);
+    expect(loaded?.schemaVersion).toBe(5);
     expect(typeof loaded?.deviceId).toBe('string');
     expect(loaded?.deviceId).not.toHaveLength(0);
+    expect(loaded?.currency).toBe('EUR');
+  });
+
+  it('preserves serverState during v4 → v5 migration', async () => {
+    const v4 = {
+      schemaVersion: 4,
+      history: { rootId: 'r', currentId: 'r', nodes: {} },
+      deviceId: 'd',
+      serverState: { url: 'https://s', lastSyncedRev: 7, pendingPushIds: ['a'] },
+    };
+    fsState.files.set(FULL_PATH, JSON.stringify(v4));
+    const loaded = await load();
+    expect(loaded?.serverState).toEqual(v4.serverState);
+    expect(loaded?.currency).toBe('EUR');
+  });
+
+  it('backfills an unknown currency on a v5 file to EUR', async () => {
+    const broken = {
+      schemaVersion: 5,
+      history: { rootId: 'r', currentId: 'r', nodes: {} },
+      deviceId: 'd',
+      currency: 'ZZZ',
+    };
+    fsState.files.set(FULL_PATH, JSON.stringify(broken));
+    const loaded = await load();
+    expect(loaded?.currency).toBe('EUR');
+  });
+
+  it('passes through a valid v5 file unchanged', async () => {
+    const v5 = {
+      schemaVersion: 5,
+      history: { rootId: 'r', currentId: 'r', nodes: {} },
+      deviceId: 'd',
+      currency: 'USD',
+    };
+    fsState.files.set(FULL_PATH, JSON.stringify(v5));
+    const loaded = await load();
+    expect(loaded).toEqual(v5);
   });
 
   it('returns the parsed payload on success', async () => {
@@ -163,14 +215,24 @@ describe('round-trip', () => {
 });
 
 describe('emptyDisk', () => {
-  it('wraps a History with the current schemaVersion and the given deviceId', () => {
+  it('wraps a History with the current schemaVersion and the given deviceId, defaulting currency to EUR', () => {
     const h = createHistory(
       { tx: [], cats: { income: [], expense: [] } },
       { idGen: () => 'r', now: () => 0 },
     );
     const d = emptyDisk(h, 'device-x');
-    expect(d.schemaVersion).toBe(4);
+    expect(d.schemaVersion).toBe(5);
     expect(d.history).toBe(h);
     expect(d.deviceId).toBe('device-x');
+    expect(d.currency).toBe('EUR');
+  });
+
+  it('accepts an explicit currency', () => {
+    const h = createHistory(
+      { tx: [], cats: { income: [], expense: [] } },
+      { idGen: () => 'r', now: () => 0 },
+    );
+    const d = emptyDisk(h, 'device-x', 'SAR');
+    expect(d.currency).toBe('SAR');
   });
 });

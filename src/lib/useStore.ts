@@ -30,6 +30,8 @@ import {
 } from './reducer';
 import { emptyDisk, load, makeDeviceId, save } from './persist';
 import { useT } from '../i18n/LangProvider';
+import { todayIso } from './format';
+import type { CurrencyCode } from './currency';
 
 const newId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -42,6 +44,15 @@ export type Store = {
   history: History;
   screen: Screen;
   setScreen: (s: Screen) => void;
+
+  currency: CurrencyCode | null;
+  isFirstRun: boolean;
+  setCurrency: (code: CurrencyCode) => void;
+  completeFirstRun: (input: {
+    currency: CurrencyCode;
+    bankOpening: number;
+    cashOpening: number;
+  }) => void;
 
   addTx: (tx: Omit<Transaction, 'id'>) => void;
   editTx: (id: string, tx: Omit<Transaction, 'id'>) => void;
@@ -72,6 +83,8 @@ export function useStore(): Store {
   );
   const [ready, setReady] = useState(false);
   const [deviceId, setDeviceId] = useState<string | null>(null);
+  const [currency, setCurrencyState] = useState<CurrencyCode | null>(null);
+  const [isFirstRun, setIsFirstRun] = useState(false);
   const [screen, setScreen] = useState<Screen>('dashboard');
   const lastSavedRef = useRef<string | null>(null);
   const tRef = useRef(t);
@@ -92,14 +105,17 @@ export function useStore(): Store {
       if (loaded) {
         setHistory(loaded.history);
         setDeviceId(loaded.deviceId);
+        setCurrencyState(loaded.currency);
         // Deliberately do NOT seed lastSavedRef here. After a load we don't
         // know if parseAndMigrate had to migrate (e.g. v3 → v4 generates
-        // deviceId); seeding the ref would let the save-skip optimisation
-        // see "already saved" and leave the disk on the pre-migration
-        // schema. Letting the first save effect run unconditionally writes
-        // the migrated form to disk; subsequent saves still dedupe normally.
+        // deviceId, v4 → v5 backfills currency); seeding the ref would let
+        // the save-skip optimisation see "already saved" and leave the disk
+        // on the pre-migration schema. Letting the first save effect run
+        // unconditionally writes the migrated form to disk; subsequent saves
+        // still dedupe normally.
       } else {
         setDeviceId(makeDeviceId());
+        setIsFirstRun(true);
       }
       setReady(true);
     })();
@@ -108,18 +124,68 @@ export function useStore(): Store {
     };
   }, []);
 
-  // Debounced auto-save whenever the history changes.
+  // Debounced auto-save whenever the history or currency changes.
+  // Skipped while currency is null (first-run window pre-modal-completion)
+  // so we never persist an incomplete file to disk.
   useEffect(() => {
-    if (!ready || !deviceId) return;
+    if (!ready || !deviceId || !currency) return;
     const handle = window.setTimeout(() => {
-      const disk = emptyDisk(history, deviceId);
+      const disk = emptyDisk(history, deviceId, currency);
       const serialized = JSON.stringify(disk);
       if (serialized === lastSavedRef.current) return;
       lastSavedRef.current = serialized;
       void save(disk);
     }, 300);
     return () => window.clearTimeout(handle);
-  }, [history, ready, deviceId]);
+  }, [history, ready, deviceId, currency]);
+
+  const setCurrency = useCallback((code: CurrencyCode) => {
+    setCurrencyState(code);
+  }, []);
+
+  const completeFirstRun = useCallback(
+    ({
+      currency: chosen,
+      bankOpening,
+      cashOpening,
+    }: {
+      currency: CurrencyCode;
+      bankOpening: number;
+      cashOpening: number;
+    }) => {
+      setCurrencyState(chosen);
+      setIsFirstRun(false);
+      const bank = Number.isFinite(bankOpening) && bankOpening > 0 ? bankOpening : 0;
+      const cash = Number.isFinite(cashOpening) && cashOpening > 0 ? cashOpening : 0;
+      if (bank === 0 && cash === 0) return;
+      setHistory((h) => {
+        const data = currentData(h);
+        const action: Action = {
+          kind: 'seedOpeningBalances',
+          bank,
+          cash,
+          bankTxId: newId(),
+          cashTxId: newId(),
+          dateIso: todayIso(),
+          categoryName: tRef.current('category.openingBalance'),
+          bankDescription: tRef.current('tx.openingBalance.bank'),
+          cashDescription: tRef.current('tx.openingBalance.cash'),
+        };
+        const next = reduce(data, action);
+        if (next === data) return h;
+        const descriptor = actionToDescriptor(data, action);
+        const label = formatDescriptor(descriptor, tRef.current);
+        return commit(
+          h,
+          next,
+          label,
+          { deviceId: deviceIdRef.current ?? undefined },
+          descriptor,
+        );
+      });
+    },
+    [],
+  );
 
   const apply = useCallback((action: Action) => {
     setHistory((h) => {
@@ -158,6 +224,10 @@ export function useStore(): Store {
     history,
     screen,
     setScreen,
+    currency,
+    isFirstRun,
+    setCurrency,
+    completeFirstRun,
     addTx: (tx) => apply({ kind: 'addTx', tx, id: newId() }),
     editTx: (id, tx) => apply({ kind: 'updateTx', id, tx }),
     deleteTx: (id) => apply({ kind: 'deleteTx', id }),

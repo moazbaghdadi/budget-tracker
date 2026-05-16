@@ -3,6 +3,7 @@ import { Sidebar } from './components/Sidebar';
 import { MOBILE_HIDDEN_SCREENS } from './components/nav-items';
 import { UndoRedoBar } from './components/UndoRedoBar';
 import { UpdateModal } from './components/UpdateModal';
+import { FirstRunModal } from './components/FirstRunModal';
 import { Dashboard } from './screens/Dashboard';
 import { Transactions } from './screens/Transactions';
 import { CategoriesScreen } from './screens/Categories';
@@ -13,7 +14,7 @@ import { useStore } from './lib/useStore';
 import { useBreakpoint } from './lib/useBreakpoint';
 import { useConfirm } from './components/ConfirmDialog';
 import { checkForUpdate, type AvailableUpdate } from './lib/updater';
-import { useT } from './i18n/LangProvider';
+import { CurrencyProvider, useT } from './i18n/LangProvider';
 
 export default function App() {
   const store = useStore();
@@ -78,6 +79,7 @@ export default function App() {
   }
 
   return (
+    <CurrencyProvider currency={store.currency}>
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar screen={store.screen} setScreen={store.setScreen} />
       <main style={{ flex: 1, overflow: 'auto' }}>
@@ -140,12 +142,19 @@ export default function App() {
           {effectiveScreen === 'import-export' && (
             <ImportExportScreen data={store.data} onImport={store.importData} />
           )}
-          {effectiveScreen === 'settings' && <SettingsScreen />}
+          {effectiveScreen === 'settings' && (
+            <SettingsScreen
+              currency={store.currency ?? 'EUR'}
+              onSetCurrency={store.setCurrency}
+            />
+          )}
         </div>
       </main>
       {pendingUpdate && !updateDismissed && (
         <UpdateModal update={pendingUpdate} onDismiss={() => setUpdateDismissed(true)} />
       )}
+      {store.isFirstRun && <FirstRunModal onComplete={store.completeFirstRun} />}
     </div>
+    </CurrencyProvider>
   );
 }

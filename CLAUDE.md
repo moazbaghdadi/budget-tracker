@@ -77,10 +77,17 @@
 - Detected at runtime via `isTauri()`:
   - In Tauri window → `@tauri-apps/plugin-fs` writes atomically to `$AppConfig/muhaseb-tech/data.json`. `$AppConfig` is Tauri's `BaseDirectory.AppConfig`, which **already includes the bundle identifier** as a path segment — so the full on-disk path is e.g. `%APPDATA%\com.codetiquette.muhasebtech\muhaseb-tech\data.json` on Windows, `~/Library/Application Support/com.codetiquette.muhasebtech/muhaseb-tech/data.json` on macOS, `~/.config/com.codetiquette.muhasebtech/muhaseb-tech/data.json` on Linux.
   - In browser → `localStorage` key `muhaseb-tech:data`
-- Disk format (v4): `{ schemaVersion: 4, history, deviceId, serverState? }`.
+- Disk format (v5): `{ schemaVersion: 5, history, deviceId, currency, serverState? }`.
   - `deviceId` is a per-install UUID generated on first load (or during v3 → v4 migration). It also stamps every new `Snapshot.deviceId` so the sync layer can attribute authorship.
+  - `currency` is a top-level `CurrencyCode` (one of EUR/USD/GBP/SYP/SAR/AED/TRY — registry at `src/lib/currency.ts`). Stored as a sibling of `history` rather than inside snapshots, so changing the currency from Settings does **not** create an undo-tree entry. Add new codes to `src/lib/currency.ts` and they automatically surface in both the first-run modal and Settings. Symbol position is per-currency (EUR/USD/GBP/TRY prefix; SYP/SAR/AED suffix) and language-independent — number separators still come from the active `Lang`.
   - `serverState` (optional) holds sync bookkeeping when the user enables sync from Settings. Absent on disk = local-only mode. See `docs/sync-architecture.md` for the full sync design.
-- Bump `SCHEMA_VERSION` and extend `parseAndMigrate` in `src/lib/persist.ts` for new migrations. Current migrators: v3 → v4 (generates a `deviceId`). v1 and v2 have no migrator; old data is discarded silently. The v3 → v4 migration leaves pre-v4 snapshots' `deviceId` absent on purpose — the sync layer treats absent `deviceId` as "this device" when reconciling.
+- Bump `SCHEMA_VERSION` and extend `parseAndMigrate` in `src/lib/persist.ts` for new migrations. Current migrators: v3 → v5 (generates a `deviceId`, defaults `currency` to EUR), v4 → v5 (defaults `currency` to EUR, preserves the existing `deviceId`). v1 and v2 have no migrator; old data is discarded silently. The v3 → v4 step (folded into v3 → v5) leaves pre-v4 snapshots' `deviceId` absent on purpose — the sync layer treats absent `deviceId` as "this device" when reconciling. Unknown `currency` values on a v5 file are silently backfilled to EUR rather than rejected.
+
+## First-run
+- True cold start = `load()` returns `null`. `useStore` flips `isFirstRun` to `true` and leaves `currency` as `null` until the modal completes; the auto-save effect is gated on `currency !== null` so we never persist a half-configured file.
+- `App.tsx` renders `<FirstRunModal />` over the main shell whenever `isFirstRun` is true. The modal is **mandatory** — no close button, no Esc dismiss. It contains a compact language switcher (the sidebar's language footer is covered by the scrim), a currency picker, and two opening-balance inputs (bank + cash, both defaulting to 0).
+- On submit the modal calls `useStore().completeFirstRun({ currency, bankOpening, cashOpening })`, which sets the currency and — if at least one balance is `> 0` — dispatches the `seedOpeningBalances` reducer action. That action creates a localized "Opening balance" income category and one income transaction per non-zero bucket dated today, all as a single undo-tree snapshot labeled via the `firstRunSeed` descriptor (`undo.firstRunSeed`).
+- Existing users (post-v4 → v5 migration) silently get `currency: 'EUR'` and never see the modal.
 
 ## Undo-tree
 - `src/lib/history.ts` — every mutation creates a snapshot; non-leaf edits create branches

@@ -49,6 +49,7 @@ export type SnapshotDescriptor =
   | { kind: 'removeAttachment'; filename: string | null }
   | { kind: 'importAppend'; txCount: number; catCount: number }
   | { kind: 'importReplace'; txCount: number; catCount: number }
+  | { kind: 'firstRunSeed'; bank: number; cash: number }
   | { kind: 'restore'; target: SnapshotDescriptor };
 
 export type Snapshot = {
@@ -78,10 +79,13 @@ export type ServerState = {
   pendingPushIds: string[];
 };
 
+import type { CurrencyCode } from './lib/currency';
+
 export type DiskFormat = {
-  schemaVersion: 4;
+  schemaVersion: 5;
   history: History;
   deviceId: string;
+  currency: CurrencyCode;
   serverState?: ServerState;
 };
 

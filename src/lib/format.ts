@@ -1,4 +1,5 @@
 import type { Lang } from '../i18n/messages';
+import { CURRENCIES, DEFAULT_CURRENCY, type CurrencyCode } from './currency';
 
 export const AR_MONTHS = [
   'يناير',
@@ -49,7 +50,7 @@ export function parseDate(d: string): Date {
   return new Date(d + 'T00:00:00');
 }
 
-// NARROW NO-BREAK SPACE (U+202F) — used between number and € symbol.
+// NARROW NO-BREAK SPACE (U+202F) — used between number and currency symbol.
 const NBSP = ' ';
 
 export function fmtN(n: number, lang: Lang = 'en'): string {
@@ -60,17 +61,30 @@ export function fmtN(n: number, lang: Lang = 'en'): string {
   });
 }
 
-// With sign. German places € after the amount; English/Arabic keep € prefix with English digits.
-export function fmt(n: number, lang: Lang = 'en'): string {
+// With sign. Symbol position is per-currency (EUR/USD/GBP/TRY prefix;
+// SYP/SAR/AED suffix); number separators come from `lang`.
+export function fmt(
+  n: number,
+  lang: Lang = 'en',
+  currency: CurrencyCode = DEFAULT_CURRENCY,
+): string {
   const abs = fmtN(n, lang);
   const sign = n < 0 ? '-' : '';
-  return lang === 'de' ? `${sign}${abs}${NBSP}€` : `${sign}€${NBSP}${abs}`;
+  const { symbol, position } = CURRENCIES[currency];
+  return position === 'suffix'
+    ? `${sign}${abs}${NBSP}${symbol}`
+    : `${sign}${symbol}${NBSP}${abs}`;
 }
 
 // Absolute value, no sign.
-export function fmtA(n: number, lang: Lang = 'en'): string {
+export function fmtA(
+  n: number,
+  lang: Lang = 'en',
+  currency: CurrencyCode = DEFAULT_CURRENCY,
+): string {
   const abs = fmtN(n, lang);
-  return lang === 'de' ? `${abs}${NBSP}€` : `€${NBSP}${abs}`;
+  const { symbol, position } = CURRENCIES[currency];
+  return position === 'suffix' ? `${abs}${NBSP}${symbol}` : `${symbol}${NBSP}${abs}`;
 }
 
 export function fmtDate(d: string, lang: Lang = 'en'): string {

@@ -12,11 +12,30 @@ export async function applyTestGlobals(page: Page): Promise<void> {
   });
 }
 
-/** Clear app data once. Use after `page.goto('/')` to start from an empty store. */
+/**
+ * Reset app data to an empty-but-valid v5 disk. Use after `page.goto('/')`
+ * to start from an empty store. Skips the mandatory first-run modal — a
+ * true cold start (no key at all) would block tests that exercise other
+ * features. Tests that specifically cover first-run should not call this.
+ */
 export async function clearAppData(page: Page): Promise<void> {
   await page.evaluate((key: string) => {
     try {
-      window.localStorage.removeItem(key);
+      const root = {
+        id: 'root',
+        parentId: null,
+        childIds: [],
+        createdAt: 0,
+        label: 'Start',
+        data: { tx: [], cats: { income: [], expense: [] } },
+      };
+      const disk = {
+        schemaVersion: 5,
+        history: { rootId: 'root', currentId: 'root', nodes: { root } },
+        deviceId: 'e2e-device',
+        currency: 'EUR',
+      };
+      window.localStorage.setItem(key, JSON.stringify(disk));
     } catch {
       /* ignore */
     }

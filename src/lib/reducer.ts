@@ -18,6 +18,17 @@ export type Action =
       mode: 'append' | 'replace';
       transactions: Transaction[];
       cats: Categories;
+    }
+  | {
+      kind: 'seedOpeningBalances';
+      bank: number;
+      cash: number;
+      bankTxId: string;
+      cashTxId: string;
+      dateIso: string;
+      categoryName: string;
+      bankDescription: string;
+      cashDescription: string;
     };
 
 export const INIT_DATA: AppData = {
@@ -116,6 +127,43 @@ export function reduce(state: AppData, action: Action): AppData {
         },
       };
     }
+    case 'seedOpeningBalances': {
+      if (action.bank <= 0 && action.cash <= 0) return state;
+      const newTxs: Transaction[] = [];
+      if (action.bank > 0) {
+        newTxs.push({
+          id: action.bankTxId,
+          date: action.dateIso,
+          type: 'income',
+          category: action.categoryName,
+          description: action.bankDescription,
+          amount: action.bank,
+          attachments: [],
+          bucket: 'bank',
+        });
+      }
+      if (action.cash > 0) {
+        newTxs.push({
+          id: action.cashTxId,
+          date: action.dateIso,
+          type: 'income',
+          category: action.categoryName,
+          description: action.cashDescription,
+          amount: action.cash,
+          attachments: [],
+          bucket: 'cash',
+        });
+      }
+      const trimmedCat = action.categoryName.trim();
+      const income = trimmedCat && !state.cats.income.includes(trimmedCat)
+        ? [...state.cats.income, trimmedCat]
+        : state.cats.income;
+      return {
+        ...state,
+        cats: { ...state.cats, income },
+        tx: [...state.tx, ...newTxs],
+      };
+    }
   }
 }
 
@@ -189,6 +237,9 @@ export function actionToDescriptor(state: AppData, action: Action): SnapshotDesc
         ? { kind: 'importReplace', txCount, catCount }
         : { kind: 'importAppend', txCount, catCount };
     }
+    case 'seedOpeningBalances': {
+      return { kind: 'firstRunSeed', bank: action.bank, cash: action.cash };
+    }
   }
 }
 
@@ -236,6 +287,16 @@ export function formatDescriptor(d: SnapshotDescriptor, t: TFn): string {
       return `${t('undo.importAppend')} · ${d.txCount.toLocaleString('en-US')} ${t('tx.title')}`;
     case 'importReplace':
       return `${t('undo.importReplace')} · ${d.txCount.toLocaleString('en-US')} ${t('tx.title')}`;
+    case 'firstRunSeed': {
+      const parts: string[] = [];
+      if (d.bank > 0)
+        parts.push(`${t('bucket.bank')} · ${d.bank.toLocaleString('en-US')}`);
+      if (d.cash > 0)
+        parts.push(`${t('bucket.cash')} · ${d.cash.toLocaleString('en-US')}`);
+      return parts.length === 0
+        ? t('undo.firstRunSeed')
+        : `${t('undo.firstRunSeed')} · ${parts.join(' · ')}`;
+    }
     case 'restore':
       return `${t('history.restorePrefix')}: ${formatDescriptor(d.target, t)}`;
   }
