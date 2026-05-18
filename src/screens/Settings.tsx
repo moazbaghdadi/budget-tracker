@@ -29,7 +29,7 @@ export function SettingsScreen({ currency, onSetCurrency }: Props) {
         <div
           role="group"
           aria-label={t('settings.section.language')}
-          style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}
+          style={{ display: 'grid', gap: 8 }}
         >
           {LANGS.map((l: Lang) => {
             const active = lang === l;
@@ -39,7 +39,6 @@ export function SettingsScreen({ currency, onSetCurrency }: Props) {
                 onClick={() => setLang(l)}
                 aria-pressed={active}
                 style={{
-                  flex: '1 1 120px',
                   minHeight: 52,
                   padding: '10px 18px',
                   borderRadius: 12,
